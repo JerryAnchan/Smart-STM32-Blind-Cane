@@ -206,7 +206,11 @@ void FallDetection(void) {
 
 void Get_Distance(void) {
     u8 i;
-    Distance = (Get_SR04_Distance() * 331) * 1.0/1000;
+    Distance = (Get_SR04_Distance() * 331) * 1.0 / 1000;
+    if (Distance == 0xFFFF) {
+        OLED_ShowStr(0, 6, "SR04 Error", 1);
+        return; // 跳过后续逻辑
+    }
     if(Distance>=4500) Distance=4500;
     SprintfIntNum((u16)Distance/10,(char *)display);
     OLED_ShowStr(0,0,display,2);
@@ -245,7 +249,7 @@ void Get_GPS(void) {
             if (errorNum++ >= 30) {
                 errorNum = 30;
                 gpsInitFlag = 0;
-                OLED_ShowStr(0, 3, "GPS ERR", 2);
+                OLED_ShowStr(50, 3, "GPS ERR", 2);
             }
             gps_flag = 0;
             rev_stop  = 0;
@@ -292,11 +296,13 @@ int main(void) {
                 shuaxin = 0;
                 OLED_ShowStr(0, 7, "Loop C", 1);
                 Get_GPS();
-                OLED_ShowStr(0, 7, "Loop D", 1);
-                FallDetection();
-                OLED_ShowStr(0, 7, "Loop E", 1);
+                OLED_ShowStr(0, 7, "Before GD", 1);
                 Get_Distance();
-                OLED_ShowStr(0, 7, "Loop F", 1);
+                OLED_ShowStr(0, 7, "After GD", 1);
+                OLED_ShowStr(0, 7, "Before FD", 1);
+                FallDetection();
+                OLED_ShowStr(0, 7, "After FD", 1);
+                OLED_ShowStr(0, 7, "Loop D", 1);
             }
         }
         delay_ms(1);
