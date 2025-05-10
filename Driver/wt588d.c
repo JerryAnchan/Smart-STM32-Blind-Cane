@@ -2,42 +2,58 @@
 
 void WT588D_GPIO_INIT(void)
 {
+    GPIO_InitTypeDef GPIO_InitStructure;
 
- GPIO_InitTypeDef  GPIO_InitStructure;
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	 //使能PB端口时钟
- GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;				 //端口配置
- GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
- GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
- GPIO_Init(GPIOC, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.11
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // 打开 GPIOA 时钟
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;             // PA0
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;      // 推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    BEEP_OUT = 0; // 初始为低电平（不响）
 }
 
-void Line_1A(unsigned char dat)//播报地址内容
+void Line_1A(unsigned char mode)
 {
-	unsigned char i;
-	
-	P_DATA = 0;
+    unsigned char i;
 
-    delay_ms(5);   
+    switch(mode) {
+        case 0: break;
 
-	for(i=0;i<8;i++)
-	{
+        case 1: // 快速短响 3 次 fall
+            for(i = 0; i < 3; i++) {
+                BEEP_OUT = 1;
+                delay_ms(100);
+                BEEP_OUT = 0;
+                delay_ms(100);
+            }
+            break;
 
-		P_DATA = 1;			
-		if(dat&0X01)
-		{	
-		    delay_us(600); 
-			  P_DATA = 0;
-		    delay_us(200);	    
-		}
-		else
-		{  
-			delay_us(200);
-			P_DATA = 0;
-		    delay_us(600);
-		}
-	    dat>>=1;
-	  }
-	P_DATA = 1;		
+        case 2: // 长响 1 次 emergency
+            BEEP_OUT = 1;
+            delay_ms(500);
+            BEEP_OUT = 0;
+            break;
+
+        case 3: // 慢响 2 次 
+            for(i = 0; i < 2; i++) {
+                BEEP_OUT = 1;
+                delay_ms(300);
+                BEEP_OUT = 0;
+                delay_ms(300);
+            }
+            break;
+
+        case 4: // 紧急报警响 5 次
+            for(i = 0; i < 5; i++) {
+                BEEP_OUT = 1;
+                delay_ms(200);
+                BEEP_OUT = 0;
+                delay_ms(150);
+            }
+            break;
+
+        default: break;
+    }
 }
-
-

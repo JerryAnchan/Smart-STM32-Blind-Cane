@@ -164,29 +164,41 @@ void CheckNewMcu(void) {
 
 void FallDetection(void) {
     u8 i;
-    adxl345_read_average(&adx,&ady,&adz,10);
-    acc=ady; acc2=adx;
-    if(acc<0) acc=-acc;
-    if(acc2<0) acc2=-acc2;
-    if(((u16)acc)>=190 || ((u16)acc2)>=190) tiltFlag=1;
-    else { tiltFlag=0; fallTime=10; }
+    adxl345_read_average(&adx, &ady, &adz, 10); // 读取加速度计数据
+    acc = ady;
+    acc2 = adx;
+    if (acc < 0) acc = -acc;
+    if (acc2 < 0) acc2 = -acc2;
+    if (((u16)acc) >= 190 || ((u16)acc2) >= 190) tiltFlag = 1;
+    else {
+        tiltFlag = 0;
+        fallTime = 10;
+    }
 
-    if(fallTime==0) {
-        if(fall==0) {
-            OLED_ShowStr(40,0,"           ",2);
-            for(i=0;i<3;i++) OLED_ShowCN(i*16+70,0,i+8,0);
+    // 在 OLED 上显示加速度计数据
+    sprintf((char *)display, "X:%5.1f", adx);
+    OLED_ShowStr(64, 6, display, 1);
+    sprintf((char *)display, "Y:%5.1f", ady);
+    OLED_ShowStr(64, 7, display, 1);
+
+    OLED_ShowStr(0, 6, "Debug FD", 1);
+
+    if (fallTime == 0) {
+        if (fall == 0) {
+            OLED_ShowStr(40, 0, "           ", 2);
+            for (i = 0; i < 3; i++) OLED_ShowCN(i * 16 + 70, 0, i + 8, 0);
             play_time = 0;
-            fall=1;
+            fall = 1;
         }
     } else {
-        if(fall==1) {
-            fall=0;
-            if(Emergency==1) {
-                for(i=0;i<4;i++) OLED_ShowCN(i*16+54,0,i+36,0);
+        if (fall == 1) {
+            fall = 0;
+            if (Emergency == 1) {
+                for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 36, 0);
             } else {
-                OLED_ShowStr(54,0,"SET:",2);
-                SprintfIntNum(SAFET_Distance,(char *)display);
-                OLED_ShowStr(87,0,display,2);
+                OLED_ShowStr(54, 0, "SET:", 2);
+                SprintfIntNum(SAFET_Distance, (char *)display);
+                OLED_ShowStr(87, 0, display, 2);
             }
         }
     }
@@ -198,6 +210,9 @@ void Get_Distance(void) {
     if(Distance>=4500) Distance=4500;
     SprintfIntNum((u16)Distance/10,(char *)display);
     OLED_ShowStr(0,0,display,2);
+
+    OLED_ShowStr(0, 6, "Debug GD", 1);
+
     if(Emergency==0) {
         if(Distance/10<=SAFET_Distance) {
             if(distanceFlag==0) {
@@ -230,7 +245,7 @@ void Get_GPS(void) {
             if (errorNum++ >= 30) {
                 errorNum = 30;
                 gpsInitFlag = 0;
-                OLED_ShowStr(0, 6, "GPS ERR", 2);
+                OLED_ShowStr(0, 3, "GPS ERR", 2);
             }
             gps_flag = 0;
             rev_stop  = 0;
@@ -267,13 +282,13 @@ int main(void) {
     TIM2_Init(500-1,7199);
     TIM3_Init(7199,0);
 
-    while(1) {
+    while (1) {
         OLED_ShowStr(0, 7, "Loop A", 1);
         KeySettings();
         OLED_ShowStr(0, 7, "Loop B", 1);
         ShowHomePage();
-        if(setn == 0) {
-            if(shuaxin == 1) {
+        if (setn == 0) {
+            if (shuaxin == 1) {
                 shuaxin = 0;
                 OLED_ShowStr(0, 7, "Loop C", 1);
                 Get_GPS();
@@ -295,6 +310,7 @@ void TIM2_IRQHandler(void) {
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
         LED=GM;
+
         if(timeCount++>=10) {
             timeCount = 0;
             shuaxin=1;
@@ -304,7 +320,6 @@ void TIM2_IRQHandler(void) {
             if(tiltFlag && fallTime>0) fallTime--;
             if(miao > 0) miao--;
             play_flag = 0;
-            if(WATER==1) play_flag = 4;
             if(distanceFlag==1) play_flag = 3;
             if(Emergency==1) play_flag = 2;
             if(fall==1) play_flag = 1;
