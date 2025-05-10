@@ -43,4 +43,4 @@ This program is built for an embedded system using the STM32 platform, offering 
 - Modular functions for each feature ensure clarity and maintainability.
 - Core functionality is implemented in the `main` loop, which handles sensor data processing and user interaction.
 
-The guide stick controlled by STM32 currently has the functions of distance detection, fall detection, GPS positioning, and light sensing to automatically light up the LED light.Later, functions such as pushing alarm information through SIM card and playing audio through WT288D can be added.
+Later, functions such as pushing alarm information through SIM card and playing audio through WT288D can be added.
