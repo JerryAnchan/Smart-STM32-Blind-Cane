@@ -1,0 +1,17 @@
+..\output\myiic.o: ..\Driver\myiic.c
+..\output\myiic.o: ..\Driver\myiic.h
+..\output\myiic.o: ..\User\stm32f10x.h
+..\output\myiic.o: ..\CMSIS\core_cm3.h
+..\output\myiic.o: D:\KEIL5\ARM\ARMCC\Bin\..\include\stdint.h
+..\output\myiic.o: ..\User\system_stm32f10x.h
+..\output\myiic.o: ..\User\stm32f10x_conf.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_adc.h
+..\output\myiic.o: ..\User\stm32f10x.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_dbgmcu.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_flash.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_gpio.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_i2c.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_rcc.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_tim.h
+..\output\myiic.o: ..\Libraries\inc\stm32f10x_usart.h
+..\output\myiic.o: ..\Libraries\inc\misc.h

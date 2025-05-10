@@ -1,0 +1,17 @@
+..\output\lcd1602.o: ..\Driver\lcd1602.c
+..\output\lcd1602.o: ..\Driver\lcd1602.h
+..\output\lcd1602.o: ..\System\delay\delay.h
+..\output\lcd1602.o: ..\System\sys\sys.h
+..\output\lcd1602.o: ..\User\stm32f10x.h
+..\output\lcd1602.o: ..\CMSIS\core_cm3.h
+..\output\lcd1602.o: D:\KEIL5\ARM\ARMCC\Bin\..\include\stdint.h
+..\output\lcd1602.o: ..\User\system_stm32f10x.h
+..\output\lcd1602.o: ..\User\stm32f10x_conf.h
+..\output\lcd1602.o: ..\Libraries\inc\stm32f10x_dbgmcu.h
+..\output\lcd1602.o: ..\User\stm32f10x.h
+..\output\lcd1602.o: ..\Libraries\inc\stm32f10x_flash.h
+..\output\lcd1602.o: ..\Libraries\inc\stm32f10x_gpio.h
+..\output\lcd1602.o: ..\Libraries\inc\stm32f10x_rcc.h
+..\output\lcd1602.o: ..\Libraries\inc\stm32f10x_tim.h
+..\output\lcd1602.o: ..\Libraries\inc\stm32f10x_usart.h
+..\output\lcd1602.o: ..\Libraries\inc\misc.h

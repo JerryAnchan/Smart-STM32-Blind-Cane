@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "stm32f10x_rcc.h": "c"
+    },
+    "C_Cpp.default.compilerPath": ""
+}
