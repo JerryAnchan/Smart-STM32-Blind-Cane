@@ -3,7 +3,9 @@
         "stm32f10x_rcc.h": "c",
         "delay.h": "c",
         "wt588d.h": "c",
-        "sys.h": "c"
+        "sys.h": "c",
+        "usart3.h": "c",
+        "timer.h": "c"
     },
     "C_Cpp.default.compilerPath": ""
 }

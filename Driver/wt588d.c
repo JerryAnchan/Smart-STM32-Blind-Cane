@@ -21,34 +21,37 @@ void Line_1A(unsigned char mode)
     switch(mode) {
         case 0: break;
 
-        case 1: // 快速短响 3 次 fall
-            for(i = 0; i < 3; i++) {
+        case 1: // 快速短响 8 次 fall
+            for(i = 0; i < 6; i++) {
                 BEEP_OUT = 1;
-                delay_ms(100);
+                delay_ms(50);
                 BEEP_OUT = 0;
-                delay_ms(100);
+                delay_ms(50);
             }
             break;
 
-        case 2: // 长响 1 次 emergency
-            BEEP_OUT = 1;
-            delay_ms(500);
-            BEEP_OUT = 0;
+        case 2: // emergency
+            for(i = 0; i < 8; i++) {
+                BEEP_OUT = 1;
+                delay_ms(50);
+                BEEP_OUT = 0;
+                delay_ms(50);
+            }
             break;
 
         case 3: // 慢响 2 次 
             for(i = 0; i < 2; i++) {
                 BEEP_OUT = 1;
-                delay_ms(300);
+                delay_ms(100);
                 BEEP_OUT = 0;
-                delay_ms(300);
+                delay_ms(100);
             }
             break;
 
         case 4: // 紧急报警响 5 次
             for(i = 0; i < 5; i++) {
                 BEEP_OUT = 1;
-                delay_ms(200);
+                delay_ms(150);
                 BEEP_OUT = 0;
                 delay_ms(150);
             }

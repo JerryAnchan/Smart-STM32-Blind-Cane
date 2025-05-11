@@ -27,9 +27,8 @@ u16 TIM3_UPDATA = 0;
 u32 temp = 0;
 u16  Get_SR04_Distance(void)
 {
-
    SR04_Trlg=0;       //触发信号是高电平脉冲，宽度大于10us
-   delay_ms(20);
+   delay_ms(10);
    SR04_Trlg=1	;
    while(!SR04_Echo); //等待高电平
 	 TIM_SetCounter(TIM3,0);  //重填计数器值
@@ -41,5 +40,3 @@ u16  Get_SR04_Distance(void)
 	 TIM_Cmd(TIM3,ENABLE);
 	 return temp;
 }
- 
-
