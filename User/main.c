@@ -287,14 +287,12 @@ int main(void) {
         KeySettings();
         ShowHomePage();
         if (setn == 0) {
-            if (shuaxin == 1) {
-                shuaxin = 0;
-                Get_GPS();
-                Get_Distance();
-                FallDetection();
-            }
+            // 直接每次循环都执行刷新相关函数
+            Get_GPS();
+            Get_Distance();
+            FallDetection();
         }
-        delay_ms(5);
+        delay_ms(1);
     }
 }
 
