@@ -181,8 +181,6 @@ void FallDetection(void) {
     sprintf((char *)display, "Y:%5.1f", ady);
     OLED_ShowStr(64, 7, display, 1);
 
-    OLED_ShowStr(0, 6, "Debug FD", 1);
-
     if (fallTime == 0) {
         if (fall == 0) {
             OLED_ShowStr(40, 0, "           ", 2);
@@ -206,33 +204,32 @@ void FallDetection(void) {
 
 void Get_Distance(void) {
     u8 i;
-    Distance = (Get_SR04_Distance() * 331) * 1.0 / 1000;
-    if (Distance == 0xFFFF) {
-        OLED_ShowStr(0, 6, "SR04 Error", 1);
+    Distance = (Get_SR04_Distance() * 331) * 1.0 / 1000; // 获取距离并转换为毫米
+    if (Distance == 0xFFFF) { // 检测到错误值
+        OLED_ShowStr(0, 6, "SR04 Error", 1); // 显示错误信息
+        delay_ms(500); // 延时避免频繁刷新
         return; // 跳过后续逻辑
     }
-    if(Distance>=4500) Distance=4500;
-    SprintfIntNum((u16)Distance/10,(char *)display);
-    OLED_ShowStr(0,0,display,2);
+    if (Distance >= 4500) Distance = 4500; // 限制最大距离
+    SprintfIntNum((u16)Distance / 10, (char *)display); // 格式化距离值
+    OLED_ShowStr(0, 0, display, 2); // 显示距离
 
-    OLED_ShowStr(0, 6, "Debug GD", 1);
-
-    if(Emergency==0) {
-        if(Distance/10<=SAFET_Distance) {
-            if(distanceFlag==0) {
-                distanceFlag=1;
-                if(fall==0) play_time = 0;
-                for(i=0;i<4;i++) OLED_ShowCN(i*16+54,0,i+2,0);
-                delay_ms(2000);
-                OLED_ShowStr(54,0,"SET:",2);
-                SprintfIntNum(SAFET_Distance,(char *)display);
-                OLED_ShowStr(87,0,display,2);
+    if (Emergency == 0) { // 非紧急状态
+        if (Distance / 10 <= SAFET_Distance) { // 距离小于安全距离
+            if (distanceFlag == 0) {
+                distanceFlag = 1;
+                if (fall == 0) play_time = 0;
+                for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 2, 0); // 显示警告
+                delay_ms(2000); // 延时
+                OLED_ShowStr(54, 0, "SET:", 2);
+                SprintfIntNum(SAFET_Distance, (char *)display);
+                OLED_ShowStr(87, 0, display, 2);
             }
         } else {
-            distanceFlag=0;
+            distanceFlag = 0; // 重置标志
         }
-    } else {
-        for(i=0;i<4;i++) OLED_ShowCN(i*16+54,0,i+36,0);
+    } else { // 紧急状态
+        for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 36, 0); // 显示紧急状态
     }
 }
 
@@ -287,25 +284,17 @@ int main(void) {
     TIM3_Init(7199,0);
 
     while (1) {
-        OLED_ShowStr(0, 7, "Loop A", 1);
         KeySettings();
-        OLED_ShowStr(0, 7, "Loop B", 1);
         ShowHomePage();
         if (setn == 0) {
             if (shuaxin == 1) {
                 shuaxin = 0;
-                OLED_ShowStr(0, 7, "Loop C", 1);
                 Get_GPS();
-                OLED_ShowStr(0, 7, "Before GD", 1);
                 Get_Distance();
-                OLED_ShowStr(0, 7, "After GD", 1);
-                OLED_ShowStr(0, 7, "Before FD", 1);
                 FallDetection();
-                OLED_ShowStr(0, 7, "After FD", 1);
-                OLED_ShowStr(0, 7, "Loop D", 1);
             }
         }
-        delay_ms(1);
+        delay_ms(5);
     }
 }
 
@@ -330,7 +319,7 @@ void TIM2_IRQHandler(void) {
             if(Emergency==1) play_flag = 2;
             if(fall==1) play_flag = 1;
             if(play_flag!=0) {
-                if(play_time==0) Line_1A(play_flag-1);
+                if(play_time==0) Line_1A(play_flag);
                 if(play_time++>=5) play_time=0;
             } else {
                 play_time=0;

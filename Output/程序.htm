@@ -3,7 +3,7 @@
 <title>Static Call Graph - [..\Output\³ÌÐò.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image ..\Output\³ÌÐò.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Sun May 11 10:55:19 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Mon May 12 11:09:28 2025
 <BR><P>
 <H3>Maximum Stack Usage =        324 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -704,7 +704,7 @@ Global Symbols
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FLASH_ErasePage
 </UL>
 
-<P><STRONG><a name="[83]"></a>FallDetection</STRONG> (Thumb, 374 bytes, Stack size 16 bytes, main.o(i.FallDetection))
+<P><STRONG><a name="[83]"></a>FallDetection</STRONG> (Thumb, 362 bytes, Stack size 16 bytes, main.o(i.FallDetection))
 <BR><BR>[Stack]<UL><LI>Max Depth = 160 + Unknown Stack Size
 <LI>Call Chain = FallDetection &rArr; SprintfIntNum &rArr; __2sprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -768,7 +768,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_GPS
 </UL>
 
-<P><STRONG><a name="[94]"></a>Get_Distance</STRONG> (Thumb, 352 bytes, Stack size 40 bytes, main.o(i.Get_Distance))
+<P><STRONG><a name="[94]"></a>Get_Distance</STRONG> (Thumb, 348 bytes, Stack size 40 bytes, main.o(i.Get_Distance))
 <BR><BR>[Stack]<UL><LI>Max Depth = 184 + Unknown Stack Size
 <LI>Call Chain = Get_Distance &rArr; SprintfIntNum &rArr; __2sprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -984,7 +984,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[b8]"></a>Line_1A</STRONG> (Thumb, 186 bytes, Stack size 16 bytes, wt588d.o(i.Line_1A))
+<P><STRONG><a name="[b8]"></a>Line_1A</STRONG> (Thumb, 188 bytes, Stack size 16 bytes, wt588d.o(i.Line_1A))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = Line_1A
 </UL>
 <BR>[Calls]<UL><LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_ms
@@ -1086,8 +1086,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WriteDat
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_SetPos
 </UL>
-<BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ShowHomePage
+<BR>[Called By]<UL><LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ShowHomePage
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;KeySettings
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_GPS
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_Distance
@@ -1212,7 +1211,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f10x_md.o(.text)
 </UL>
-<P><STRONG><a name="[2a]"></a>TIM2_IRQHandler</STRONG> (Thumb, 224 bytes, Stack size 8 bytes, main.o(i.TIM2_IRQHandler))
+<P><STRONG><a name="[2a]"></a>TIM2_IRQHandler</STRONG> (Thumb, 220 bytes, Stack size 8 bytes, main.o(i.TIM2_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = TIM2_IRQHandler &rArr; Line_1A
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_GetITStatus
@@ -1560,7 +1559,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 
-<P><STRONG><a name="[4e]"></a>main</STRONG> (Thumb, 262 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[4e]"></a>main</STRONG> (Thumb, 166 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 208 + Unknown Stack Size
 <LI>Call Chain = main &rArr; Get_GPS &rArr; GPS_RMC_Parse &rArr; Get_Double_Number &rArr; Str_To_Double &rArr; __aeabi_dmul
 </UL>
@@ -1571,7 +1570,6 @@ Global Symbols
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM3_Init
 <LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM2_Init
 <LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_ms
-<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowStr
 <LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
 <LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_CLS
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Configuration

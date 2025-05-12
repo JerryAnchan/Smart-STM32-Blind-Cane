@@ -22,29 +22,29 @@ void Line_1A(unsigned char mode)
         case 0: break;
 
         case 1: // 快速短响 8 次 fall
-            for(i = 0; i < 6; i++) {
+            for(i = 0; i < 8; i++) {
                 BEEP_OUT = 1;
-                delay_ms(50);
+                delay_ms(150);
                 BEEP_OUT = 0;
-                delay_ms(50);
+                delay_ms(150);
             }
             break;
 
         case 2: // emergency
-            for(i = 0; i < 8; i++) {
+            for(i = 0; i < 4; i++) {
                 BEEP_OUT = 1;
-                delay_ms(50);
+                delay_ms(500);
                 BEEP_OUT = 0;
                 delay_ms(50);
             }
             break;
 
         case 3: // 慢响 2 次 
-            for(i = 0; i < 2; i++) {
+            for(i = 0; i < 5; i++) {
                 BEEP_OUT = 1;
-                delay_ms(100);
+                delay_ms(60);
                 BEEP_OUT = 0;
-                delay_ms(100);
+                delay_ms(60);
             }
             break;
 
