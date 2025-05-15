@@ -231,9 +231,11 @@ void CheckNewMcu(void) {
  */
 void FallDetection(void) {
     u8 i;
-    
-    // 读取加速度计数据(平均10次采样)
-    adxl345_read_average(&accelX, &accelY, &accelZ, 10);
+    OLED_ShowStr(0, 7, "FD IN    ", 1); // 入口
+    // 可以将10定义为一个宏或变量，方便调整采样次数
+    #define ACCEL_SAMPLE_COUNT 100
+    adxl345_read_average(&accelX, &accelY, &accelZ, ACCEL_SAMPLE_COUNT);
+    OLED_ShowStr(0, 7, "FD OUT   ", 1); // 出口
     
     // 计算加速度幅值
     accelMagnitude = accelY;
@@ -312,6 +314,7 @@ void Get_Distance(void) {
                 OLED_ShowStr(54, 0, "SET:", 2);
                 SprintfIntNum(safetyDistance, (char *)displayBuffer);
                 OLED_ShowStr(87, 0, displayBuffer, 2);
+                delay_ms(2000);
             }
         } else {
             distanceWarning = 0;
@@ -341,7 +344,7 @@ void Get_GPS(void) {
             if(errorNum++ >= 30) {
                 errorNum = 30;
                 gpsInitFlag = 0;
-                OLED_ShowStr(0, 2, "GPS ERR", 2);
+                OLED_ShowStr(0, 2, "GPS ERROR      ", 2);
             }
             gps_flag = 0;
             rev_stop = 0;
@@ -396,12 +399,12 @@ int main(void) {
     
     // 主循环
     while(1) {
-        OLED_ShowStr(0, 7, "Loop A", 1);
+        OLED_ShowStr(0, 7, "Loop A ", 1);
         
         // 处理按键输入
         KeySettings();
         
-        OLED_ShowStr(0, 7, "Loop B", 1);
+        OLED_ShowStr(0, 7, "Loop B ", 1);
         
         // 显示主界面
         ShowHomePage();
@@ -411,23 +414,24 @@ int main(void) {
             if(refreshFlag == 1) {
                 refreshFlag = 0;
                 
-                OLED_ShowStr(0, 7, "Loop C", 1);
+                OLED_ShowStr(0, 7, "Loop C ", 1);
                 // 更新GPS数据
                 Get_GPS();
                 
-                OLED_ShowStr(0, 7, "Loop D", 1);
+                OLED_ShowStr(0, 7, "Loop D ", 1);
                 // 更新跌倒检测数据
+                
                 FallDetection();
                 
-                OLED_ShowStr(0, 7, "Loop E", 1);
+                OLED_ShowStr(0, 7, "Loop E ", 1);
                 // 更新距离数据
                 Get_Distance();
                 
-                OLED_ShowStr(0, 7, "Loop F", 1);
+                OLED_ShowStr(0, 7, "Loop F ", 1);
             }
         }
         
-        delay_ms(1); // 短暂延时，防止CPU占用过高
+        //delay_ms(1); // 短暂延时，防止CPU占用过高
     }
 }
 

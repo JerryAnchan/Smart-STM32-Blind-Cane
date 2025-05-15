@@ -3,7 +3,7 @@
 <title>Static Call Graph - [..\Output\³ÌÐò.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image ..\Output\³ÌÐò.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu May 15 16:36:56 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu May 15 20:32:49 2025
 <BR><P>
 <H3>Maximum Stack Usage =        324 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -708,7 +708,7 @@ Global Symbols
 <LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FLASH_ErasePage
 </UL>
 
-<P><STRONG><a name="[83]"></a>FallDetection</STRONG> (Thumb, 372 bytes, Stack size 16 bytes, main.o(i.FallDetection))
+<P><STRONG><a name="[83]"></a>FallDetection</STRONG> (Thumb, 396 bytes, Stack size 16 bytes, main.o(i.FallDetection))
 <BR><BR>[Stack]<UL><LI>Max Depth = 160 + Unknown Stack Size
 <LI>Call Chain = FallDetection &rArr; SprintfIntNum &rArr; __2sprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -730,10 +730,10 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WT588D_GPIO_INIT
 <LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_init
-<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_IN
-<LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HC_SR04_IO_Init
-<LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
+<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_IN
+<LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HC_SR04_IO_Init
+<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
 <LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LED_GPIO_Init
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;KEY_GPIO_Init
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BEEP_GPIO_Init
@@ -774,7 +774,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_GPS
 </UL>
 
-<P><STRONG><a name="[95]"></a>Get_Distance</STRONG> (Thumb, 366 bytes, Stack size 40 bytes, main.o(i.Get_Distance))
+<P><STRONG><a name="[95]"></a>Get_Distance</STRONG> (Thumb, 374 bytes, Stack size 40 bytes, main.o(i.Get_Distance))
 <BR><BR>[Stack]<UL><LI>Max Depth = 184 + Unknown Stack Size
 <LI>Call Chain = Get_Distance &rArr; SprintfIntNum &rArr; __2sprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -809,13 +809,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[96]"></a>Get_SR04_Distance</STRONG> (Thumb, 144 bytes, Stack size 32 bytes, hc_sr04.o(i.Get_SR04_Distance))
-<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = Get_SR04_Distance &rArr; __aeabi_d2iz
+<P><STRONG><a name="[96]"></a>Get_SR04_Distance</STRONG> (Thumb, 200 bytes, Stack size 40 bytes, hc_sr04.o(i.Get_SR04_Distance))
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = Get_SR04_Distance &rArr; __aeabi_d2iz
 </UL>
-<BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_SetCounter
-<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_GetCounter
-<LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
-<LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_ms
+<BR>[Calls]<UL><LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_SetCounter
+<LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_GetCounter
+<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 <LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_i2d
 <LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2iz
 <LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ddiv
@@ -823,7 +823,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_Distance
 </UL>
 
-<P><STRONG><a name="[a1]"></a>HC_SR04_IO_Init</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, hc_sr04.o(i.HC_SR04_IO_Init))
+<P><STRONG><a name="[a2]"></a>HC_SR04_IO_Init</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, hc_sr04.o(i.HC_SR04_IO_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = HC_SR04_IO_Init &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB2PeriphClockCmd
@@ -835,15 +835,15 @@ Global Symbols
 <P><STRONG><a name="[6]"></a>HardFault_Handler</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_it.o(i.HardFault_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f10x_md.o(RESET)
 </UL>
-<P><STRONG><a name="[a2]"></a>I2C_Configuration</STRONG> (Thumb, 8 bytes, Stack size 8 bytes, oled_i2c.o(i.I2C_Configuration))
+<P><STRONG><a name="[a3]"></a>I2C_Configuration</STRONG> (Thumb, 8 bytes, Stack size 8 bytes, oled_i2c.o(i.I2C_Configuration))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = I2C_Configuration &rArr; bsp_InitI2C_2 &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
+<BR>[Calls]<UL><LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[a4]"></a>I2C_SDA_IN</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, iic.o(i.I2C_SDA_IN))
+<P><STRONG><a name="[a5]"></a>I2C_SDA_IN</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, iic.o(i.I2C_SDA_IN))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = I2C_SDA_IN &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
@@ -852,35 +852,35 @@ Global Symbols
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_read_byte
 </UL>
 
-<P><STRONG><a name="[a5]"></a>I2C_SDA_OUT</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, iic.o(i.I2C_SDA_OUT))
+<P><STRONG><a name="[a6]"></a>I2C_SDA_OUT</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, iic.o(i.I2C_SDA_OUT))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_noack
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_ack
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_ack
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_stop
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_start
 <LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_send_byte
 </UL>
 
-<P><STRONG><a name="[a6]"></a>I2C_WriteByte</STRONG> (Thumb, 46 bytes, Stack size 16 bytes, oled_i2c.o(i.I2C_WriteByte))
+<P><STRONG><a name="[a7]"></a>I2C_WriteByte</STRONG> (Thumb, 46 bytes, Stack size 16 bytes, oled_i2c.o(i.I2C_WriteByte))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = I2C_WriteByte &rArr; i2c_WaitAck_2 &rArr; i2c_Stop_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_WaitAck_2
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
-<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Start_2
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_SendByte_2
+<BR>[Calls]<UL><LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_WaitAck_2
+<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
+<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Start_2
+<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_SendByte_2
 </UL>
 <BR>[Called By]<UL><LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WriteDat
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WriteCmd
 </UL>
 
-<P><STRONG><a name="[ab]"></a>IIC_ack</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, iic.o(i.IIC_ack))
+<P><STRONG><a name="[ac]"></a>IIC_ack</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, iic.o(i.IIC_ack))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = IIC_ack &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_read_byte
 </UL>
@@ -898,8 +898,8 @@ Global Symbols
 <P><STRONG><a name="[af]"></a>IIC_noack</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, iic.o(i.IIC_noack))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = IIC_noack &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_read_byte
 </UL>
@@ -908,9 +908,9 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = IIC_read_byte &rArr; IIC_noack &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_noack
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_ack
-<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_IN
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_ack
+<LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_IN
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_data
 </UL>
@@ -918,8 +918,8 @@ Global Symbols
 <P><STRONG><a name="[b1]"></a>IIC_send_byte</STRONG> (Thumb, 68 bytes, Stack size 16 bytes, iic.o(i.IIC_send_byte))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = IIC_send_byte &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_write_reg
 <LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_data
@@ -928,8 +928,8 @@ Global Symbols
 <P><STRONG><a name="[b2]"></a>IIC_start</STRONG> (Thumb, 46 bytes, Stack size 8 bytes, iic.o(i.IIC_start))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = IIC_start &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_write_reg
 <LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_data
@@ -938,8 +938,8 @@ Global Symbols
 <P><STRONG><a name="[b3]"></a>IIC_stop</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, iic.o(i.IIC_stop))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = IIC_stop &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_OUT
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_wait_ack
 <LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_write_reg
@@ -949,9 +949,9 @@ Global Symbols
 <P><STRONG><a name="[b4]"></a>IIC_wait_ack</STRONG> (Thumb, 68 bytes, Stack size 8 bytes, iic.o(i.IIC_wait_ack))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = IIC_wait_ack &rArr; IIC_stop &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_IN
+<BR>[Calls]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_SDA_IN
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_stop
-<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_write_reg
 <LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_data
@@ -1111,8 +1111,8 @@ Global Symbols
 <P><STRONG><a name="[72]"></a>RCC_APB2PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f10x_rcc.o(i.RCC_APB2PeriphClockCmd))
 <BR><BR>[Called By]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WT588D_GPIO_INIT
 <LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_init
-<LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HC_SR04_IO_Init
-<LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
+<LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HC_SR04_IO_Init
+<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
 <LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LED_GPIO_Init
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;KEY_GPIO_Init
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BEEP_GPIO_Init
@@ -1234,7 +1234,7 @@ Global Symbols
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NVIC_Init
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TimeBaseInit
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ITConfig
-<LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
+<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
@@ -1254,7 +1254,7 @@ Global Symbols
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NVIC_Init
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TimeBaseInit
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ITConfig
-<LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
+<LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
@@ -1264,13 +1264,13 @@ Global Symbols
 <LI><a href="#[2a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM2_IRQHandler
 </UL>
 
-<P><STRONG><a name="[9f]"></a>TIM_Cmd</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f10x_tim.o(i.TIM_Cmd))
+<P><STRONG><a name="[a0]"></a>TIM_Cmd</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f10x_tim.o(i.TIM_Cmd))
 <BR><BR>[Called By]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_SR04_Distance
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM3_Init
 <LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM2_Init
 </UL>
 
-<P><STRONG><a name="[a0]"></a>TIM_GetCounter</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f10x_tim.o(i.TIM_GetCounter))
+<P><STRONG><a name="[a1]"></a>TIM_GetCounter</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f10x_tim.o(i.TIM_GetCounter))
 <BR><BR>[Called By]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_SR04_Distance
 </UL>
 
@@ -1286,7 +1286,7 @@ Global Symbols
 <LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM2_Init
 </UL>
 
-<P><STRONG><a name="[9e]"></a>TIM_SetCounter</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_tim.o(i.TIM_SetCounter))
+<P><STRONG><a name="[9f]"></a>TIM_SetCounter</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_tim.o(i.TIM_SetCounter))
 <BR><BR>[Called By]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_SR04_Distance
 </UL>
 
@@ -1415,7 +1415,7 @@ Global Symbols
 <P><STRONG><a name="[bc]"></a>WriteCmd</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, oled_i2c.o(i.WriteCmd))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = WriteCmd &rArr; I2C_WriteByte &rArr; i2c_WaitAck_2 &rArr; i2c_Stop_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
+<BR>[Calls]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 <BR>[Called By]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_SetPos
 <LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
@@ -1425,7 +1425,7 @@ Global Symbols
 <P><STRONG><a name="[bd]"></a>WriteDat</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, oled_i2c.o(i.WriteDat))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = WriteDat &rArr; I2C_WriteByte &rArr; i2c_WaitAck_2 &rArr; i2c_Stop_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
+<BR>[Calls]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 <BR>[Called By]<UL><LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowStr
 <LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowChar
@@ -1453,12 +1453,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[84]"></a>adxl345_read_average</STRONG> (Thumb, 168 bytes, Stack size 40 bytes, adxl345.o(i.adxl345_read_average))
-<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = adxl345_read_average &rArr; adxl345_read_data &rArr; IIC_read_byte &rArr; IIC_noack &rArr; I2C_SDA_OUT &rArr; GPIO_Init
+<P><STRONG><a name="[84]"></a>adxl345_read_average</STRONG> (Thumb, 224 bytes, Stack size 48 bytes, adxl345.o(i.adxl345_read_average))
+<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = adxl345_read_average &rArr; adxl345_read_data &rArr; IIC_read_byte &rArr; IIC_noack &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_data
 <LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_ms
-<LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2f
 <LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_i2f
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
@@ -1466,7 +1465,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FallDetection
 </UL>
 
-<P><STRONG><a name="[e3]"></a>adxl345_read_data</STRONG> (Thumb, 142 bytes, Stack size 32 bytes, adxl345.o(i.adxl345_read_data))
+<P><STRONG><a name="[e3]"></a>adxl345_read_data</STRONG> (Thumb, 170 bytes, Stack size 32 bytes, adxl345.o(i.adxl345_read_data))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = adxl345_read_data &rArr; IIC_read_byte &rArr; IIC_noack &rArr; I2C_SDA_OUT &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_wait_ack
@@ -1489,14 +1488,14 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_init
 </UL>
 
-<P><STRONG><a name="[a3]"></a>bsp_InitI2C_2</STRONG> (Thumb, 56 bytes, Stack size 8 bytes, oled_i2c.o(i.bsp_InitI2C_2))
+<P><STRONG><a name="[a4]"></a>bsp_InitI2C_2</STRONG> (Thumb, 56 bytes, Stack size 8 bytes, oled_i2c.o(i.bsp_InitI2C_2))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = bsp_InitI2C_2 &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB2PeriphClockCmd
 <LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
+<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Configuration
+<BR>[Called By]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Configuration
 </UL>
 
 <P><STRONG><a name="[e6]"></a>delay_init</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, delay.o(i.delay_init))
@@ -1509,7 +1508,6 @@ Global Symbols
 
 <P><STRONG><a name="[7a]"></a>delay_ms</STRONG> (Thumb, 126 bytes, Stack size 0 bytes, delay.o(i.delay_ms))
 <BR><BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_average
-<LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_SR04_Distance
 <LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
 <LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;KeySettings
@@ -1517,70 +1515,71 @@ Global Symbols
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CheckNewMcu
 </UL>
 
-<P><STRONG><a name="[ac]"></a>delay_us</STRONG> (Thumb, 72 bytes, Stack size 0 bytes, delay.o(i.delay_us))
+<P><STRONG><a name="[9e]"></a>delay_us</STRONG> (Thumb, 72 bytes, Stack size 0 bytes, delay.o(i.delay_us))
 <BR><BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_noack
-<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_ack
+<LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_ack
 <LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_wait_ack
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_stop
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_start
 <LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_send_byte
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_read_byte
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_WaitAck_2
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
-<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Start_2
-<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_SendByte_2
+<LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_SR04_Distance
+<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_WaitAck_2
+<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
+<LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Start_2
+<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_SendByte_2
 </UL>
 
-<P><STRONG><a name="[a8]"></a>i2c_SendByte_2</STRONG> (Thumb, 76 bytes, Stack size 16 bytes, oled_i2c.o(i.i2c_SendByte_2))
+<P><STRONG><a name="[a9]"></a>i2c_SendByte_2</STRONG> (Thumb, 76 bytes, Stack size 16 bytes, oled_i2c.o(i.i2c_SendByte_2))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = i2c_SendByte_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
+<BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 
-<P><STRONG><a name="[a7]"></a>i2c_Start_2</STRONG> (Thumb, 42 bytes, Stack size 8 bytes, oled_i2c.o(i.i2c_Start_2))
+<P><STRONG><a name="[a8]"></a>i2c_Start_2</STRONG> (Thumb, 42 bytes, Stack size 8 bytes, oled_i2c.o(i.i2c_Start_2))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = i2c_Start_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
+<BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 
-<P><STRONG><a name="[aa]"></a>i2c_Stop_2</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, oled_i2c.o(i.i2c_Stop_2))
+<P><STRONG><a name="[ab]"></a>i2c_Stop_2</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, oled_i2c.o(i.i2c_Stop_2))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = i2c_Stop_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_WaitAck_2
-<LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
+<BR>[Called By]<UL><LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_WaitAck_2
+<LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;bsp_InitI2C_2
+<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 
-<P><STRONG><a name="[a9]"></a>i2c_WaitAck_2</STRONG> (Thumb, 70 bytes, Stack size 8 bytes, oled_i2c.o(i.i2c_WaitAck_2))
+<P><STRONG><a name="[aa]"></a>i2c_WaitAck_2</STRONG> (Thumb, 70 bytes, Stack size 8 bytes, oled_i2c.o(i.i2c_WaitAck_2))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = i2c_WaitAck_2 &rArr; i2c_Stop_2
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
-<LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
+<BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_us
+<LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;i2c_Stop_2
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
+<BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WriteByte
 </UL>
 
-<P><STRONG><a name="[4e]"></a>main</STRONG> (Thumb, 236 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[4e]"></a>main</STRONG> (Thumb, 230 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 208 + Unknown Stack Size
 <LI>Call Chain = main &rArr; Get_GPS &rArr; GPS_RMC_Parse &rArr; Get_Double_Number &rArr; Str_To_Double &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WT588D_GPIO_INIT
 <LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IIC_init
 <LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_init
-<LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HC_SR04_IO_Init
+<LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HC_SR04_IO_Init
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM3_Init
 <LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM2_Init
 <LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_ms
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowStr
 <LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
 <LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_CLS
-<LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Configuration
+<LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Configuration
 <LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LED_GPIO_Init
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;KEY_GPIO_Init
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BEEP_GPIO_Init
@@ -1812,8 +1811,7 @@ Global Symbols
 <P><STRONG><a name="[139]"></a>_fflt</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, fflt_clz.o(x$fpl$fflt), UNUSED)
 
 <P><STRONG><a name="[9a]"></a>__aeabi_ui2f</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, fflt_clz.o(x$fpl$ffltu))
-<BR><BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;adxl345_read_average
-<LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_Distance
+<BR><BR>[Called By]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_Distance
 </UL>
 
 <P><STRONG><a name="[13a]"></a>_ffltu</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, fflt_clz.o(x$fpl$ffltu), UNUSED)

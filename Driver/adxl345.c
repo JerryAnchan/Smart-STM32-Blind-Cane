@@ -47,52 +47,54 @@ u8 adxl345_read_reg(u8 addr)
 	return temp;
 }
 //读取数据函数
-void adxl345_read_data(short *x,short *y,short *z)
+void adxl345_read_data(short *x, short *y, short *z)
 {
-	u8 buf[6];
-	u8 i;
-	IIC_start();  				 
-	IIC_send_byte(slaveaddress);	//发送写器件指令	 
-	IIC_wait_ack();	   
-    IIC_send_byte(0x32);   		//发送寄存器地址(数据缓存的起始地址为0X32)
-	IIC_wait_ack(); 	 										  		   
- 
- 	IIC_start();  	 	   		//重新启动
-	IIC_send_byte(regaddress);	//发送读器件指令
-	IIC_wait_ack();
-	for(i=0;i<6;i++)
-	{
-		if(i==5)buf[i]=IIC_read_byte(0);//读取一个字节,不继续再读,发送NACK  
-		else buf[i]=IIC_read_byte(1);	//读取一个字节,继续读,发送ACK 
- 	}	        	   
-    IIC_stop();					//产生一个停止条件
-	*x=(short)(((u16)buf[1]<<8)+buf[0]); 	//合成数据    
-	*y=(short)(((u16)buf[3]<<8)+buf[2]); 	    
-	*z=(short)(((u16)buf[5]<<8)+buf[4]); 
+    u8 buf[6];
+    u8 i;
+    IIC_start();
+    IIC_send_byte(slaveaddress);    //发送写器件指令
+    if(IIC_wait_ack()) goto error;
+    IIC_send_byte(0x32);            //发送寄存器地址
+    if(IIC_wait_ack()) goto error;
+
+    IIC_start();
+    IIC_send_byte(regaddress);      //发送读器件指令
+    if(IIC_wait_ack()) goto error;
+    for(i=0; i<6; i++)
+    {
+        if(i==5) buf[i]=IIC_read_byte(0);
+        else buf[i]=IIC_read_byte(1);
+    }
+    IIC_stop();
+    *x=(short)(((u16)buf[1]<<8)+buf[0]);
+    *y=(short)(((u16)buf[3]<<8)+buf[2]);
+    *z=(short)(((u16)buf[5]<<8)+buf[4]);
+    return;
+error:
+    IIC_stop();
+    *x = *y = *z = 0; // 采集失败时返回0
 }
 //连读读取几次取平均值函数
 //times 取平均值的次数
-void adxl345_read_average(float *x,float *y,float *z,u8 times)
+void adxl345_read_average(float *x, float *y, float *z, u8 times)
 {
-	u8 i;
-	short tx,ty,tz;
-	*x=0;
-	*y=0;
-	*z=0;
-	if(times)//读取次数不为0
-	{
-		for(i=0;i<times;i++)//连续读取times次
-		{
-			adxl345_read_data(&tx,&ty,&tz);
-			*x+=tx;
-			*y+=ty;
-			*z+=tz;
-			delay_ms(5);
-		}
-		*x/=times;
-		*y/=times;
-		*z/=times;
-	}
+    u8 i, err = 0;
+    short tx, ty, tz;
+    *x = 0; *y = 0; *z = 0;
+    if(times)
+    {
+        for(i=0; i<times; i++)
+        {
+            adxl345_read_data(&tx, &ty, &tz);
+            if(tx==0 && ty==0 && tz==0) { err++; continue; }
+            *x += tx; *y += ty; *z += tz;
+            delay_ms(5);
+        }
+        if(err == times) { *x = *y = *z = 0; return; }
+        *x /= (times-err);
+        *y /= (times-err);
+        *z /= (times-err);
+    }
 }
 //void get_angle(float x_angle,float y_angle,float z_angle)
 //{

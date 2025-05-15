@@ -5,7 +5,9 @@
         "wt588d.h": "c",
         "sys.h": "c",
         "usart3.h": "c",
-        "timer.h": "c"
+        "timer.h": "c",
+        "oled_i2c.h": "c",
+        "iic.h": "c"
     },
     "C_Cpp.default.compilerPath": ""
 }

@@ -17,3 +17,4 @@
 ..\output\hc_sr04.o: ..\Libraries\inc\stm32f10x_usart.h
 ..\output\hc_sr04.o: ..\Libraries\inc\misc.h
 ..\output\hc_sr04.o: ..\System\delay\delay.h
+..\output\hc_sr04.o: ..\Driver\OLED_I2C.h

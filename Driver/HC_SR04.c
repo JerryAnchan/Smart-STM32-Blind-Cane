@@ -1,7 +1,7 @@
 #include "HC_SR04.h"
 //#include "timer.h"
 #include "delay.h"
-
+#include "OLED_I2C.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 
 void HC_SR04_IO_Init(void)
@@ -27,16 +27,32 @@ u16 TIM3_UPDATA = 0;
 u32 temp = 0;
 u16  Get_SR04_Distance(void)
 {
-   SR04_Trlg=0;       //触发信号是高电平脉冲，宽度大于10us
-   delay_ms(10);
-   SR04_Trlg=1	;
-   while(!SR04_Echo); //等待高电平
-	 TIM_SetCounter(TIM3,0);  //重填计数器值
-	 TIM3_UPDATA = 0;         //溢出次数清零
-   while(SR04_Echo);  //等待低电平
-	 TIM_Cmd(TIM3,DISABLE);  //暂时关闭定时器，保证数据正确性
-   temp = (int)(((double)(TIM_GetCounter(TIM3) + (7200* TIM3_UPDATA)))/72/2);  //得到高电平总时间，单位us（定时器的计数值加上溢出的值才是高电平的时间），除以2是计算单程的时间
-	 //（7200* TIM3_UPDATA这里为溢出的时间us，可以转换为100* TIM3_UPDATA,因为在公式后面除以了72。可最终理解为TIM3_UPDATA个100us）
-	 TIM_Cmd(TIM3,ENABLE);
-	 return temp;
+    u32 timeout = 0;
+    SR04_Trlg = 0;
+    delay_us(10);      // 建议用us级延时
+    SR04_Trlg = 1;
+    delay_us(15);      // 保证高电平宽度大于10us
+    SR04_Trlg = 0;
+
+    // 等待回波引脚变高，超时则返回异常
+    timeout = 30000;   // 约30ms超时
+    while(!SR04_Echo) {
+        if(--timeout == 0) return 0xFFFF;
+        //OLED_ShowStr(0, 7, "Loop E1", 1);
+    }
+
+    TIM_SetCounter(TIM3, 0);
+    TIM3_UPDATA = 0;
+
+    // 等待回波引脚变低，超时则返回异常
+    timeout = 30000;   // 约30ms超时
+    while(SR04_Echo) {
+        if(--timeout == 0) return 0xFFFF;
+        //OLED_ShowStr(0, 7, "Loop E2", 1);
+    }
+
+    TIM_Cmd(TIM3, DISABLE);
+    temp = (int)(((double)(TIM_GetCounter(TIM3) + (7200 * TIM3_UPDATA))) / 72 / 2);
+    TIM_Cmd(TIM3, ENABLE);
+    return temp;
 }
