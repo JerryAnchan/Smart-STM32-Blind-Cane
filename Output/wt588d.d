@@ -1,6 +1,5 @@
 ..\output\wt588d.o: ..\Driver\wt588d.c
 ..\output\wt588d.o: ..\Driver\wt588d.h
-..\output\wt588d.o: ..\System\sys\sys.h
 ..\output\wt588d.o: ..\User\stm32f10x.h
 ..\output\wt588d.o: ..\CMSIS\core_cm3.h
 ..\output\wt588d.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -17,3 +16,4 @@
 ..\output\wt588d.o: ..\Libraries\inc\stm32f10x_usart.h
 ..\output\wt588d.o: ..\Libraries\inc\misc.h
 ..\output\wt588d.o: ..\System\delay\delay.h
+..\output\wt588d.o: ..\System\sys\sys.h
