@@ -73,9 +73,9 @@ void sim800_send(unsigned char *content)
     gsm_rev_okflag = 0;
     OLED_ShowStr(0, 6, "   Send Sms...  ", 2);
     gsm_send_msg(ConversionNum, (char *)content);
-    delay_ms(2000);
-    delay_ms(2000);
-    delay_ms(2000);
+    delay_ms(200);
+    delay_ms(200);
+    delay_ms(200);
     while(gsm_rev_okflag == 0)
     {
         if(send_count++ > 8000)
@@ -92,9 +92,9 @@ void sim800_send(unsigned char *content)
     else
         OLED_ShowStr(0, 6, "   Send OK!     ", 2);
     // UsartRx1BufClear(); // 如有需要请在主程序调用
-    delay_ms(2000);
-    delay_ms(2000);
-    delay_ms(2000);
+    delay_ms(200);
+    delay_ms(200);
+    delay_ms(200);
     OLED_ShowStr(0, 6, "                ", 2);
 }
 
