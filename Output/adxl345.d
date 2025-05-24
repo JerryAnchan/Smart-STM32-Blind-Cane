@@ -18,3 +18,4 @@
 ..\output\adxl345.o: ..\Libraries\inc\misc.h
 ..\output\adxl345.o: ..\Driver\iic.h
 ..\output\adxl345.o: ..\System\delay\delay.h
+..\output\adxl345.o: ..\System\usart\usart1.h

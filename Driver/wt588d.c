@@ -121,3 +121,8 @@ void BeepUpdate(void)
             break;
     }
 }
+
+void StopBeep(void) {
+    beepState = BEEP_IDLE;
+    BEEP_OUT = 0;
+}

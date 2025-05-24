@@ -10,10 +10,13 @@
 #include "adxl345.h"
 #include "wt588d.h"
 #include "GPS.h"
+#include "gsm.h"  // 添加 gsm.h 头文件
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "stm32f10x_iwdg.h" // 添加头文件
+#include <math.h> // 添加此行
 
 // 闪存保存地址定义
 #define FLASH_SAVE_ADDR  ((u32)0x0800F000)
@@ -50,6 +53,7 @@ u8 sendFlag = 0x00;           // 发送标志
 float accelX, accelY, accelZ; // 加速度计数据
 float accelMagnitude, accelMagnitude2; // 加速度幅值
 bool emergencyMode = 0;       // 紧急模式标志
+//u8 sendSmsFlag = 0;           // 发送短信标志
 
 /**
  * 清空串口1接收缓冲区
@@ -112,15 +116,19 @@ void ShowHomePage(void) {
  */
 void DisplaySetValue(void) {
     u8 add = 2, i;
-    
-    // 在设置安全距离模式下显示星号
+    // 设置手机号时显示数字，并高亮当前位
     if(settingMode >= 2) {
         for(i = 0; i < 11; i++) {
-            OLED_ShowChar((add++)*8, 4, '*', 2, 0);
+            if(i == (settingMode - 2)) {
+                // 当前正在设置的位高亮显示（如反白或加下划线，具体看你的OLED库支持）
+                OLED_ShowChar((add++)*8, 4, PhoneNumber[i], 2, 1); // 1为高亮
+            } else {
+                OLED_ShowChar((add++)*8, 4, PhoneNumber[i], 2, 0);
+            }
         }
+        return;
     }
-    
-    // 根据当前设置模式更新显示
+    // 其它模式下的显示
     if(settingMode == 0) {
         SprintfIntNum(safetyDistance, (char *)displayBuffer);
         OLED_ShowStr(87, 0, displayBuffer, 2);
@@ -133,72 +141,97 @@ void DisplaySetValue(void) {
 /**
  * 按键设置处理
  */
-void KeySettings(void) {
+void KeySettings(void)
+{
     char i;
-    
     // KEY1: 切换设置模式
     if(KEY1 == 0) {
-        delay_ms(20); // 消抖
+        delay_ms(20);
         if(KEY1 == 0) {
-            while(KEY1 == 0); // 等待按键释放
+            while(KEY1 == 0);
             settingMode++;
-            
-            // 超出设置模式范围则重置
-            if(settingMode > 1) {
+            if(settingMode > 12) {
                 settingMode = 0;
-                // 保存安全距离到闪存
-                STMFLASH_Write(FLASH_SAVE_ADDR + 0x60, &safetyDistance, 1);
-                systemInitFlag = 1; // 标记需要重新初始化界面
+                STMFLASH_Write(FLASH_SAVE_ADDR + 0x40, (u16*)PhoneNumber, 11); // 保存手机号
+                PhoneNumTranscoding();
+                STMFLASH_Write(FLASH_SAVE_ADDR + 0x60, &safetyDistance, 1); // 保存安全距离
+                systemInitFlag = 1;
             }
-            
-            // 进入设置安全距离模式
             if(settingMode == 1) {
-                OLED_CLS(); // 清屏
-                for(i = 0; i < 6; i++) OLED_ShowCN(i*16+16, 0, i+30, 0);
+                OLED_CLS();
+                for(i = 0; i < 6; i++) OLED_ShowCN(i*16+16, 0, i+30, 0); // 设置提醒距离
             }
-            
-            DisplaySetValue(); // 更新显示
+            if(settingMode == 2) {
+                for(i = 0; i < 8; i++) OLED_ShowCN(i*16, 0, i+11, 0); // 设置接收短信号码
+            }
+            DisplaySetValue();
         }
     }
-    
-    // KEY2: 增加安全距离
+    // KEY2: 增加
     if(KEY2 == 0) {
-        delay_ms(50); // 消抖
-        if(KEY2 == 0 && settingMode == 1) {
-            if(safetyDistance < 450) safetyDistance++;
-            DisplaySetValue(); // 更新显示
+        if(settingMode != 0) delay_ms(80);
+        else delay_ms(50);
+        if(KEY2 == 0) {
+            if(settingMode == 1) {
+                if(safetyDistance < 450) safetyDistance++;
+                DisplaySetValue();
+            }
+            if(settingMode >= 2) {
+                PhoneNumber[settingMode-2]++;
+                if(PhoneNumber[settingMode-2] > '9') PhoneNumber[settingMode-2] = '0';
+                DisplaySetValue();
+            }
         }
     }
-    
-    // KEY3: 减少安全距离
+    // KEY3: 减少
     if(KEY3 == 0) {
-        delay_ms(50); // 消抖
-        if(KEY3 == 0 && settingMode == 1) {
-            if(safetyDistance > 0) safetyDistance--;
-            DisplaySetValue(); // 更新显示
+        if(settingMode != 0) delay_ms(80);
+        else delay_ms(50);
+        if(KEY3 == 0) {
+            if(settingMode == 1) {
+                if(safetyDistance > 0) safetyDistance--;
+                DisplaySetValue();
+            }
+            if(settingMode >= 2) {
+                PhoneNumber[settingMode-2]--;
+                if(PhoneNumber[settingMode-2] < '0') PhoneNumber[settingMode-2] = '9';
+                DisplaySetValue();
+            }
         }
     }
-    
-    // KEY4: 进入紧急模式
+    // KEY4: 一键求助
     if(KEY4 == 0) {
-        delay_ms(20); // 消抖
-        if(KEY4 == 0 && settingMode == 0) {
-            while(KEY4 == 0); // 等待按键释放
-            emergencyMode = 1;
-            if(fallDetected == 0) playTimeCounter = 0;
-            StartBeep(2); // 启动紧急模式蜂鸣
+        delay_ms(20);
+        if(KEY4 == 0) {
+            while(KEY4 == 0);
+            if(settingMode == 0) {
+                if(emergencyMode == 0) {
+                    if(!(sendFlag & 0x02)) {
+                        sendFlag |= 0x02;
+                        sendSmsFlag = 2;
+                    }
+                    if(fallDetected == 0) playTimeCounter = 0;
+                    emergencyMode = 1;
+                    StartBeep(2);
+                }
+            }
         }
     }
-    
-    // KEY5: 退出紧急模式
+    // KEY5: 取消求助
     if(KEY5 == 0) {
-        delay_ms(20); // 消抖
-        if(KEY5 == 0 && settingMode == 0) {
-            while(KEY5 == 0); // 等待按键释放
-            emergencyMode = 0;
-            OLED_ShowStr(54, 0, "SET:", 2);
-            SprintfIntNum(safetyDistance, (char *)displayBuffer);
-            OLED_ShowStr(87, 0, displayBuffer, 2);
+        delay_ms(20);
+        if(KEY5 == 0) {
+            while(KEY5 == 0);
+            if(settingMode == 0) {
+                if(emergencyMode == 1) {
+                    emergencyMode = 0;
+                    sendFlag &= 0xFD;
+                    StopBeep(); // 立即停止蜂鸣器
+                    OLED_ShowStr(54, 0, "SET:", 2);
+                    SprintfIntNum(safetyDistance, (char *)displayBuffer);
+                    OLED_ShowStr(87, 0, displayBuffer, 2);
+                }
+            }
         }
     }
 }
@@ -230,51 +263,47 @@ void CheckNewMcu(void) {
  * 跌倒检测处理
  */
 void FallDetection(void) {
+    #define ACCEL_SAMPLE_COUNT 15
+    #define FALL_ACCEL_THRESHOLD 190.0f   // 跌倒判定阈值（可根据实际调整）
+    #define FALL_TIMER_INIT 8            // 跌倒计时初值
+
+    float ax = 0, ay = 0, az = 0;
     u8 i;
-    OLED_ShowStr(0, 7, "FD IN    ", 1); // 入口
-    // 可以将10定义为一个宏或变量，方便调整采样次数
-    #define ACCEL_SAMPLE_COUNT 100
-    adxl345_read_average(&accelX, &accelY, &accelZ, ACCEL_SAMPLE_COUNT);
-    OLED_ShowStr(0, 7, "FD OUT   ", 1); // 出口
-    
-    // 计算加速度幅值
-    accelMagnitude = accelY;
-    accelMagnitude2 = accelX;
-    if(accelMagnitude < 0) accelMagnitude = -accelMagnitude;
-    if(accelMagnitude2 < 0) accelMagnitude2 = -accelMagnitude2;
-    
-    // 检测倾斜状态
-    if(((u16)accelMagnitude) >= 190 || ((u16)accelMagnitude2) >= 190) {
+
+    // 采集加速度平均值
+    adxl345_read_average(&ax, &ay, &az, ACCEL_SAMPLE_COUNT);
+
+    // OLED调试显示
+    sprintf((char *)displayBuffer, "X:%5.1f", ax);
+    OLED_ShowStr(64, 6, displayBuffer, 1);
+    sprintf((char *)displayBuffer, "Y:%5.1f", ay);
+    OLED_ShowStr(64, 7, displayBuffer, 1);
+    OLED_ShowStr(0, 6, "Debug FD", 1);
+
+    // 判断是否倾倒
+    if (fabsf(ax) >= FALL_ACCEL_THRESHOLD || fabsf(ay) >= FALL_ACCEL_THRESHOLD) {
         tiltDetected = 1;
     } else {
         tiltDetected = 0;
-        fallTimer = 10; // 重置跌倒计时器
+        fallTimer = FALL_TIMER_INIT; // 恢复计时器
     }
-    
-    // 在OLED上显示加速度计数据(调试信息)
-    sprintf((char *)displayBuffer, "X:%5.1f", accelX);
-    OLED_ShowStr(64, 6, displayBuffer, 1);
-    sprintf((char *)displayBuffer, "Y:%5.1f", accelY);
-    OLED_ShowStr(64, 7, displayBuffer, 1);
-    OLED_ShowStr(0, 6, "Debug FD", 1);
-    
-    // 处理跌倒状态
-    if(fallTimer == 0) {
-        if(fallDetected == 0) {
-            // 显示跌倒警告
+
+    // 跌倒判定
+    if (fallTimer == 0) {
+        if (fallDetected == 0) {
             OLED_ShowStr(40, 0, "           ", 2);
-            for(i = 0; i < 3; i++) OLED_ShowCN(i * 16 + 70, 0, i + 8, 0);
+            for (i = 0; i < 3; i++) OLED_ShowCN(i * 16 + 70, 0, i + 8, 0);
             fallDetected = 1;
-            StartBeep(1); // 启动跌倒模式蜂鸣
+            StartBeep(1);
+            sendSmsFlag = 1; // 设置发送短信标志
         }
     } else {
-        if(fallDetected == 1) {
+        if (fallDetected == 1) {
             fallDetected = 0;
-            if(emergencyMode == 1) {
-                // 显示紧急模式信息
-                for(i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 36, 0);
+            StopBeep(); // 跌倒恢复时立即停止蜂鸣器
+            if (emergencyMode == 1) {
+                for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 36, 0);
             } else {
-                // 恢复正常显示
                 OLED_ShowStr(54, 0, "SET:", 2);
                 SprintfIntNum(safetyDistance, (char *)displayBuffer);
                 OLED_ShowStr(87, 0, displayBuffer, 2);
@@ -344,7 +373,6 @@ void Get_GPS(void) {
             if(errorNum++ >= 30) {
                 errorNum = 30;
                 gpsInitFlag = 0;
-                OLED_ShowStr(0, 2, "GPS ERROR      ", 2);
             }
             gps_flag = 0;
             rev_stop = 0;
@@ -363,6 +391,9 @@ void Get_GPS(void) {
  * 主函数
  */
 int main(void) {
+    char SEND_BUF[400];// 发送短信缓冲区
+    char BUF1[50], BUF2[50]; // BUF1为经纬度转换前的字符串，BUF2为转换后的存储字符串
+
     // 系统初始化
     delay_init();
     NVIC_Configuration();
@@ -397,6 +428,18 @@ int main(void) {
     TIM2_Init(500-1, 7199);  // 10ms中断
     TIM3_Init(7199, 0);      // 用于其他定时功能
     
+    // GSM初始化
+    OLED_ShowStr(0,2,"   GSM Init...  ",2);
+    PhoneNumTranscoding(); // 电话号码转码
+    gsm_init();
+
+    /*
+    WDG_WriteAccessCmd(IWDG_WriteAccess_Enable); // 允许访问IWDG
+    IWDG_SetPrescaler(IWDG_Prescaler_64);         // 预分频64
+    IWDG_SetReload(1562);                         // 约2秒超时(40kHz/64/1562 ≈ 1.0s，可根据需要调整)
+    IWDG_ReloadCounter();                         // 喂一次狗
+    IWDG_Enable();                                // 使能看门狗
+    */
     // 主循环
     while(1) {
         OLED_ShowStr(0, 7, "Loop A ", 1);
@@ -420,7 +463,6 @@ int main(void) {
                 
                 OLED_ShowStr(0, 7, "Loop D ", 1);
                 // 更新跌倒检测数据
-                
                 FallDetection();
                 
                 OLED_ShowStr(0, 7, "Loop E ", 1);
@@ -428,10 +470,39 @@ int main(void) {
                 Get_Distance();
                 
                 OLED_ShowStr(0, 7, "Loop F ", 1);
+
+                if(sendSmsFlag != 0) {
+                    memset(SEND_BUF, 0, 400);    // 清空缓冲区
+
+                    if(sendSmsFlag == 1) {
+                        strncpy(SEND_BUF, "8BF76CE8610FFF0C68C06D4B523080014EBA64545012FF01", 48); // 注意，检测到用户跌倒
+                    }
+                    if(sendSmsFlag == 2) {
+                        strncpy(SEND_BUF, "62119047523056F096BEFF0C970089815E2E52A9FF01", 44); // 用户主动求救，需要紧急救援
+                    }
+                    strcat(SEND_BUF, "7ECF5EA6"); // 经度
+
+                    memset(BUF1, 0, 50);      // 清空缓冲区
+                    memset(BUF2, 0, 50);      // 清空缓冲区
+                    sprintf((char *)BUF1, "%10.6f ", GPS.longitude_Degree);
+                    LongiAndLatiChangeUnicode(BUF1, BUF2); // 经度转换
+                    strcat(SEND_BUF, BUF2);
+
+                    strcat(SEND_BUF, "FF0C7EAC5EA6"); // 纬度
+                    memset(BUF1, 0, 50);      // 清空缓冲区
+                    memset(BUF2, 0, 50);      // 清空缓冲区
+                    sprintf((char *)BUF1, "%10.6f ", GPS.latitude_Degree);
+                    LongiAndLatiChangeUnicode(BUF1, BUF2); // 纬度转换
+                    strcat(SEND_BUF, BUF2);
+                    strcat(SEND_BUF, "3002");
+
+                    sim800_send((unsigned char *)SEND_BUF); // 发送短信
+                    sendSmsFlag = 0;
+                }
             }
         }
         
-        //delay_ms(1); // 短暂延时，防止CPU占用过高
+        //IWDG_ReloadCounter(); // 喂狗，防止复位
     }
 }
 

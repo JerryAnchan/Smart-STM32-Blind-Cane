@@ -445,6 +445,11 @@
               <FileType>1</FileType>
               <FilePath>..\Libraries\src\stm32f10x_i2c.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\src\stm32f10x_iwdg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -489,6 +494,11 @@
               <FileName>wt588d.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Driver\wt588d.c</FilePath>
+            </File>
+            <File>
+              <FileName>gsm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\gsm.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -71,8 +71,8 @@ void uart1_Init(u32 bound)
    //Usart1 NVIC 配置
 
   NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1 ;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		
 
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;	//IRQ通道使能
   NVIC_Init(&NVIC_InitStructure);	//根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器USART1

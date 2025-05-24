@@ -51,8 +51,8 @@ void USART3_Init(u32 baud)
   
       // Enable the USART3 Interrupt   
       NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;   
-      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority= 1 ;
-      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;        
+      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; // 优先级最高
+      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;        
       NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
       NVIC_Init(&NVIC_InitStructure);       
   } 

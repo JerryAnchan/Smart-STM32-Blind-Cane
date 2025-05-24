@@ -10,5 +10,5 @@
 void WT588D_GPIO_INIT(void);
 void StartBeep(unsigned char mode);
 void BeepUpdate(void);
-
+void StopBeep(void);
 #endif

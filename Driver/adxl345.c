@@ -1,106 +1,113 @@
-/***********************
-¼ÓËÙ¶È´«¸ĞÆ÷ADXL345Êı¾İ¶ÁÈ¡³ÌĞò
-IIC×ÜÏß½Ó¿Ú
-SDA£ºPD5
-SCL£ºPD6
-************************/
+
 #include "adxl345.h"
 #include "iic.h"
 #include "delay.h"
-//´«¸ĞÆ÷³õÊ¼»¯
+#include "usart1.h" // ç”¨äºè°ƒè¯•è¾“å‡º
+
 void adxl345_init()
 {
-		adxl345_write_reg(0X31,0X0B);		//µÍµçÆ½ÖĞ¶ÏÊä³ö,13Î»È«·Ö±æÂÊ,Êä³öÊı¾İÓÒ¶ÔÆë,16gÁ¿³Ì 
-		adxl345_write_reg(0x2C,0x0B);		//Êı¾İÊä³öËÙ¶ÈÎª100Hz
-		adxl345_write_reg(0x2D,0x08);	   	//Á´½ÓÊ¹ÄÜ,²âÁ¿Ä£Ê½,Ê¡µçÌØĞÔ
-		adxl345_write_reg(0X2E,0x80);		//²»Ê¹ÓÃÖĞ¶Ï		 
-	 	adxl345_write_reg(0X1E,0x00);
-		adxl345_write_reg(0X1F,0x00);
-		adxl345_write_reg(0X20,0x05);	
+    u8 id = adxl345_read_reg(DEVICE_ID);
+    if (id != 0xE5) {
+        //printf("ADXL345 åˆï¿½?åŒ–å¤±è´¥ï¼ŒID = 0x%02X\r\n", id);
+        return;
+    }
+
+    adxl345_write_reg(0X31, 0X0B); // 13ä½æ¨¡ï¿½?Â±16g
+    adxl345_write_reg(0x2C, 0x0B); // 100Hz
+    adxl345_write_reg(0x2D, 0x08); // è¿›å…¥æµ‹é‡æ¨¡å¼
+    adxl345_write_reg(0X2E, 0x00); // ç¦ç”¨ï¿½?ï¿½ï¿½
+    adxl345_write_reg(0X1E, 0x00);
+    adxl345_write_reg(0X1F, 0x00);
+    adxl345_write_reg(0X20, 0x05);
 }
-//Ğ´¼Ä´æÆ÷º¯Êı
-void adxl345_write_reg(u8 addr,u8 val) 
+
+void adxl345_write_reg(u8 addr, u8 val) 
 {
-	IIC_start();  				 
-	IIC_send_byte(slaveaddress);     	//·¢ËÍĞ´Æ÷¼şÖ¸Áî	 
-	IIC_wait_ack();	   
-    IIC_send_byte(addr);   			//·¢ËÍ¼Ä´æÆ÷µØÖ·
-	IIC_wait_ack(); 	 										  		   
-	IIC_send_byte(val);     		//·¢ËÍÖµ					   
-	IIC_wait_ack();  		    	   
-    IIC_stop();						//²úÉúÒ»¸öÍ£Ö¹Ìõ¼ş 	   
+    IIC_start();
+    IIC_send_byte(slaveaddress);
+    if (IIC_wait_ack()) goto stop;
+    IIC_send_byte(addr);
+    if (IIC_wait_ack()) goto stop;
+    IIC_send_byte(val);
+    if (IIC_wait_ack()) goto stop;
+stop:
+    IIC_stop();
 }
-//¶Á¼Ä´æÆ÷º¯Êı
+
 u8 adxl345_read_reg(u8 addr)
 {
-	u8 temp=0;		 
-	IIC_start();  				 
-	IIC_send_byte(slaveaddress);	//·¢ËÍĞ´Æ÷¼şÖ¸Áî	 
-	temp=IIC_wait_ack();	   
-    IIC_send_byte(addr);   		//·¢ËÍ¼Ä´æÆ÷µØÖ·
-	temp=IIC_wait_ack(); 	 										  		   
-	IIC_start();  	 	   		//ÖØĞÂÆô¶¯
-	IIC_send_byte(regaddress);	//·¢ËÍ¶ÁÆ÷¼şÖ¸Áî	 
-	temp=IIC_wait_ack();	   
-    temp=IIC_read_byte(0);		//¶ÁÈ¡Ò»¸ö×Ö½Ú,²»¼ÌĞøÔÙ¶Á,·¢ËÍNAK 	    	   
-    IIC_stop();					//²úÉúÒ»¸öÍ£Ö¹Ìõ¼ş 	    
-	return temp;
+    u8 temp = 0;
+    IIC_start();
+    IIC_send_byte(slaveaddress);
+    if (IIC_wait_ack()) goto stop;
+    IIC_send_byte(addr);
+    if (IIC_wait_ack()) goto stop;
+    IIC_start();
+    IIC_send_byte(regaddress);
+    if (IIC_wait_ack()) goto stop;
+    temp = IIC_read_byte(0);
+stop:
+    IIC_stop();
+    return temp;
 }
-//¶ÁÈ¡Êı¾İº¯Êı
+
 void adxl345_read_data(short *x, short *y, short *z)
 {
     u8 buf[6];
     u8 i;
-    IIC_start();
-    IIC_send_byte(slaveaddress);    //·¢ËÍĞ´Æ÷¼şÖ¸Áî
-    if(IIC_wait_ack()) goto error;
-    IIC_send_byte(0x32);            //·¢ËÍ¼Ä´æÆ÷µØÖ·
-    if(IIC_wait_ack()) goto error;
+    *x = *y = *z = 0;
 
     IIC_start();
-    IIC_send_byte(regaddress);      //·¢ËÍ¶ÁÆ÷¼şÖ¸Áî
-    if(IIC_wait_ack()) goto error;
-    for(i=0; i<6; i++)
-    {
-        if(i==5) buf[i]=IIC_read_byte(0);
-        else buf[i]=IIC_read_byte(1);
+    IIC_send_byte(slaveaddress);
+    if (IIC_wait_ack()) goto error;
+    IIC_send_byte(0x32);
+    if (IIC_wait_ack()) goto error;
+
+    IIC_start();
+    IIC_send_byte(regaddress);
+    if (IIC_wait_ack()) goto error;
+
+    for(i = 0; i < 6; i++) {
+        buf[i] = IIC_read_byte(i != 5);
     }
     IIC_stop();
-    *x=(short)(((u16)buf[1]<<8)+buf[0]);
-    *y=(short)(((u16)buf[3]<<8)+buf[2]);
-    *z=(short)(((u16)buf[5]<<8)+buf[4]);
+
+    *x = (short)(((u16)buf[1] << 8) | buf[0]);
+    *y = (short)(((u16)buf[3] << 8) | buf[2]);
+    *z = (short)(((u16)buf[5] << 8) | buf[4]);
     return;
+
 error:
     IIC_stop();
-    *x = *y = *z = 0; // ²É¼¯Ê§°ÜÊ±·µ»Ø0
+    *x = *y = *z = 0;
 }
-//Á¬¶Á¶ÁÈ¡¼¸´ÎÈ¡Æ½¾ùÖµº¯Êı
-//times È¡Æ½¾ùÖµµÄ´ÎÊı
+
 void adxl345_read_average(float *x, float *y, float *z, u8 times)
 {
     u8 i, err = 0;
     short tx, ty, tz;
-    *x = 0; *y = 0; *z = 0;
-    if(times)
-    {
-        for(i=0; i<times; i++)
-        {
-            adxl345_read_data(&tx, &ty, &tz);
-            if(tx==0 && ty==0 && tz==0) { err++; continue; }
-            *x += tx; *y += ty; *z += tz;
-            delay_ms(5);
+    *x = *y = *z = 0;
+
+    if (times == 0) return;
+
+    for (i = 0; i < times; i++) {
+        adxl345_read_data(&tx, &ty, &tz);
+        if (tx == 0 && ty == 0 && tz == 0) {
+            err++;
+            continue;
         }
-        if(err == times) { *x = *y = *z = 0; return; }
-        *x /= (times-err);
-        *y /= (times-err);
-        *z /= (times-err);
+        *x += tx;
+        *y += ty;
+        *z += tz;
+        delay_ms(2);
     }
+
+    if (err == times || times == err) {
+        *x = *y = *z = 0;
+        return;
+    }
+
+    *x /= (float)(times - err);
+    *y /= (float)(times - err);
+    *z /= (float)(times - err);
 }
-//void get_angle(float x_angle,float y_angle,float z_angle)
-//{
-//	short ax,ay,az;
-//	adxl345_read_average(&ax,&ay,&az,10);
-//	x_angle=atan(ax/sqrt((az*az+ay*ay)));
-//	y_angle=atan(ay/sqrt((ax*ax+az*az)));
-//	z_angle=atan(sqrt((ax*ax+ay*ay)/az));
-//}

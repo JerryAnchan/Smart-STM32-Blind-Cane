@@ -26,7 +26,10 @@
 ..\output\main.o: ..\Driver\adxl345.h
 ..\output\main.o: ..\Driver\wt588d.h
 ..\output\main.o: ..\Driver\GPS.h
+..\output\main.o: ..\Driver\gsm.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+..\output\main.o: ..\Libraries\inc\stm32f10x_iwdg.h
+..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
