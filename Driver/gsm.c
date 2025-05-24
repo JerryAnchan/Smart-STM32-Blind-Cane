@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-char PhoneNumber[PHONE_NUMBER_LEN] = "18543448120";
+char PhoneNumber[PHONE_NUMBER_LEN] = "18888888888";
 char ConversionNum[CONVERSION_NUM_LEN] = {0};
 uint8_t sendSmsFlag = 0;
 
