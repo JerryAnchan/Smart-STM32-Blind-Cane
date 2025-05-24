@@ -1,7 +1,7 @@
 /* wt588d.c 文件内容 */
 #include "wt588d.h"
 #include "delay.h"
-
+#include "sys.h"
 // 蜂鸣器状态机相关变量
 typedef enum {
     BEEP_IDLE,       // 空闲状态

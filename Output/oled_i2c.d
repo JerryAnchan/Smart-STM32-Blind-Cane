@@ -16,5 +16,4 @@
 ..\output\oled_i2c.o: ..\Libraries\inc\stm32f10x_usart.h
 ..\output\oled_i2c.o: ..\Libraries\inc\misc.h
 ..\output\oled_i2c.o: ..\System\delay\delay.h
-..\output\oled_i2c.o: ..\System\sys\sys.h
 ..\output\oled_i2c.o: ..\Driver\codetab.h

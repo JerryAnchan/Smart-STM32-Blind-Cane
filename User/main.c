@@ -263,7 +263,7 @@ void CheckNewMcu(void) {
  * 跌倒检测处理
  */
 void FallDetection(void) {
-    #define ACCEL_SAMPLE_COUNT 15
+    #define ACCEL_SAMPLE_COUNT 5
     #define FALL_ACCEL_THRESHOLD 190.0f   // 跌倒判定阈值（可根据实际调整）
     #define FALL_TIMER_INIT 8            // 跌倒计时初值
 
@@ -271,8 +271,10 @@ void FallDetection(void) {
     u8 i;
 
     // 采集加速度平均值
+    //OLED_ShowStr(0, 6, "       FD1", 1);
     adxl345_read_average(&ax, &ay, &az, ACCEL_SAMPLE_COUNT);
-
+    //OLED_ShowStr(0, 6, "       FD2", 1);
+    
     // OLED调试显示
     sprintf((char *)displayBuffer, "X:%5.1f", ax);
     OLED_ShowStr(64, 6, displayBuffer, 1);
@@ -339,11 +341,11 @@ void Get_Distance(void) {
                 if (fallDetected == 0) playTimeCounter = 0;
                 for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 2, 0);
                 StartBeep(3); // 启动蜂鸣
-                delay_ms(2000); // 延时
+                delay_ms(200); // 延时
                 OLED_ShowStr(54, 0, "SET:", 2);
                 SprintfIntNum(safetyDistance, (char *)displayBuffer);
                 OLED_ShowStr(87, 0, displayBuffer, 2);
-                delay_ms(2000);
+                delay_ms(200);
             }
         } else {
             distanceWarning = 0;
@@ -442,34 +444,30 @@ int main(void) {
     */
     // 主循环
     while(1) {
-        OLED_ShowStr(0, 7, "Loop A ", 1);
-        
+        //Uart1_SendStr("LoopA\r\n");
         // 处理按键输入
         KeySettings();
         
-        OLED_ShowStr(0, 7, "Loop B ", 1);
-        
+        //Uart1_SendStr("LoopB\r\n");
         // 显示主界面
         ShowHomePage();
         
+        //Uart1_SendStr("LoopC\r\n");
         // 在非设置模式下更新传感器数据
         if(settingMode == 0) {
             if(refreshFlag == 1) {
                 refreshFlag = 0;
                 
-                OLED_ShowStr(0, 7, "Loop C ", 1);
                 // 更新GPS数据
                 Get_GPS();
                 
-                OLED_ShowStr(0, 7, "Loop D ", 1);
                 // 更新跌倒检测数据
                 FallDetection();
-                
-                OLED_ShowStr(0, 7, "Loop E ", 1);
+            
                 // 更新距离数据
+                //Uart1_SendStr("GD_IN\r\n");
                 Get_Distance();
-                
-                OLED_ShowStr(0, 7, "Loop F ", 1);
+                //Uart1_SendStr("GD_OUT\r\n");
 
                 if(sendSmsFlag != 0) {
                     memset(SEND_BUF, 0, 400);    // 清空缓冲区

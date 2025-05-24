@@ -11,7 +11,8 @@
         "adxl345.h": "c",
         "stm32f10x_iwdg.h": "c",
         "gsm.h": "c",
-        "usart1.h": "c"
+        "usart1.h": "c",
+        "stm32f10x.h": "c"
     },
     "C_Cpp.default.compilerPath": ""
 }

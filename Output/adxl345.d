@@ -19,3 +19,5 @@
 ..\output\adxl345.o: ..\Driver\iic.h
 ..\output\adxl345.o: ..\System\delay\delay.h
 ..\output\adxl345.o: ..\System\usart\usart1.h
+..\output\adxl345.o: ..\Driver\OLED_I2C.h
+..\output\adxl345.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

@@ -93,6 +93,7 @@ u8 IIC_wait_ack()
 		if(tempTime>250)
 		{
 			IIC_stop();
+			//Uart1_SendStr("IIC_TO\r\n"); // 加这一句
 			return 1;
 		}	 
 	}
@@ -110,9 +111,9 @@ void IIC_send_byte(u8 txd)
 		IIC_SDA=(txd&0x80)>>7;//读取字节
 		txd<<=1;
 		IIC_SCL=1;
-		delay_us(2); //发送数据
+		delay_us(5); // 发送数据
 		IIC_SCL=0;
-		delay_us(2);
+		delay_us(5);
 	}
 }
 //读取一个字节
@@ -123,7 +124,7 @@ u8 IIC_read_byte(u8 ack)
    for(i=0;i<8;i++)
    {
    		IIC_SCL=0;
-		delay_us(2);
+		delay_us(5);
 		IIC_SCL=1;
 		receive<<=1;//左移
 		if(READ_SDA)
@@ -139,4 +140,3 @@ u8 IIC_read_byte(u8 ack)
 	return receive;//返回读取到的字节
 }
 
-	

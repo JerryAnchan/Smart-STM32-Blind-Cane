@@ -2,7 +2,7 @@
 #define __GPIO_H	 
 #include "sys.h"
 
-#define BEEP  PCout(13)	
+#define BEEP_OUT PCout(13)	
 
 #define KEY1  PBin(12)	
 #define KEY2  PBin(13)	

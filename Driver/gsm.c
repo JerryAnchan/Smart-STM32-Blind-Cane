@@ -45,16 +45,6 @@ void gsm_init(void)
 {
     gsm_atcmd_send("AT\r\n");
     delay_ms(1000);
-    gsm_atcmd_send("AT+CSCS=\"UCS2\"\r\n");
-    delay_ms(1000);
-    gsm_atcmd_send("AT+CMGF=1\r\n");
-    delay_ms(1000);
-    gsm_atcmd_send("AT+CNMI=2,1\r\n");
-    delay_ms(1000);
-    gsm_atcmd_send("AT+CMGD=1,4\r\n");
-    delay_ms(1000);
-    gsm_atcmd_send("AT+CSMP=17,0,2,25\r\n");
-    delay_ms(1000);
 }
 
 void gsm_send_msg(const char* number, char *content)
