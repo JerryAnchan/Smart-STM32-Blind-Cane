@@ -153,7 +153,6 @@ void KeySettings(void)
             if(settingMode > 12) {
                 settingMode = 0;
                 STMFLASH_Write(FLASH_SAVE_ADDR + 0x40, (u16*)PhoneNumber, 11); // 保存手机号
-                PhoneNumTranscoding();
                 STMFLASH_Write(FLASH_SAVE_ADDR + 0x60, &safetyDistance, 1); // 保存安全距离
                 systemInitFlag = 1;
             }
@@ -395,7 +394,7 @@ void Get_GPS(void) {
 int main(void) {
     char SEND_BUF[400];// 发送短信缓冲区
     char BUF1[50], BUF2[50]; // BUF1为经纬度转换前的字符串，BUF2为转换后的存储字符串
-
+    uint16_t wait_count = 0; 
     // 系统初始化
     delay_init();
     NVIC_Configuration();
@@ -432,8 +431,15 @@ int main(void) {
     
     // GSM初始化
     OLED_ShowStr(0,2,"   GSM Init...  ",2);
-    PhoneNumTranscoding(); // 电话号码转码
     gsm_init();
+
+    // 等待GSM模块初始化完成
+    wait_count = 0;
+    gsm_rev_okflag = 0;
+    while(gsm_rev_okflag == 0 && wait_count++ < 5000) {
+        delay_ms(1);
+    }
+    gsm_rev_okflag = 0;
 
     /*
     WDG_WriteAccessCmd(IWDG_WriteAccess_Enable); // 允许访问IWDG
@@ -473,28 +479,25 @@ int main(void) {
                     memset(SEND_BUF, 0, 400);    // 清空缓冲区
 
                     if(sendSmsFlag == 1) {
-                        strncpy(SEND_BUF, "8BF76CE8610FFF0C68C06D4B523080014EBA64545012FF01", 48); // 注意，检测到用户跌倒
+                        strcpy(SEND_BUF, "注意,检测到用户跌倒,经度:"); // 直接用UTF-8汉字
                     }
                     if(sendSmsFlag == 2) {
-                        strncpy(SEND_BUF, "62119047523056F096BEFF0C970089815E2E52A9FF01", 44); // 用户主动求救，需要紧急救援
+                        strcpy(SEND_BUF, "用户主动求救,需要紧急救援,经度:"); // 直接用UTF-8汉字
                     }
-                    strcat(SEND_BUF, "7ECF5EA6"); // 经度
 
-                    memset(BUF1, 0, 50);      // 清空缓冲区
-                    memset(BUF2, 0, 50);      // 清空缓冲区
-                    sprintf((char *)BUF1, "%10.6f ", GPS.longitude_Degree);
-                    LongiAndLatiChangeUnicode(BUF1, BUF2); // 经度转换
-                    strcat(SEND_BUF, BUF2);
+                    // 拼接经度
+                    sprintf(BUF1, "%10.6f", GPS.longitude_Degree);
+                    strcat(SEND_BUF, BUF1);
 
-                    strcat(SEND_BUF, "FF0C7EAC5EA6"); // 纬度
-                    memset(BUF1, 0, 50);      // 清空缓冲区
-                    memset(BUF2, 0, 50);      // 清空缓冲区
-                    sprintf((char *)BUF1, "%10.6f ", GPS.latitude_Degree);
-                    LongiAndLatiChangeUnicode(BUF1, BUF2); // 纬度转换
+                    strcat(SEND_BUF, ",纬度:"); // 逗号用中文逗号
+
+                    // 拼接纬度
+                    sprintf(BUF2, "%10.6f", GPS.latitude_Degree);
                     strcat(SEND_BUF, BUF2);
-                    strcat(SEND_BUF, "3002");
 
                     sim800_send((unsigned char *)SEND_BUF); // 发送短信
+                    memset(BUF1, 0, 50);      // 清空缓冲区
+                    memset(BUF2, 0, 50);      // 清空缓冲区
                     sendSmsFlag = 0;
                 }
             }

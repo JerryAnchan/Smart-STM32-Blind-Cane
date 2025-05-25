@@ -15,10 +15,8 @@ extern uint8_t gsm_rev_start;
 extern uint8_t gsm_rev_okflag;
 
 void PhoneNumTranscoding(void);
-void gsm_atcmd_send(char *at);
 void gsm_init(void);
-void gsm_send_msg(const char* number, char *content);
+void gsm_send_msg(const char* number, const char* content);
 void sim800_send(unsigned char *content);
-void LongiAndLatiChangeUnicode(char *str1, char *str2);
 
 #endif

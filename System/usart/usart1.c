@@ -1,7 +1,7 @@
 #include <stm32f10x.h>
 #include <stdio.h>
 #include "usart1.h"
-
+#include <string.h> 
 char Usart1RecBuf[USART1_RXBUFF_SIZE];//串口1接收数据缓存
 unsigned int RxCounter = 0;   //串口1收到数据标志位
 
@@ -98,27 +98,35 @@ void uart1_Init(u32 bound)
 u8 gsm_rev_start = 0;     //接收开始标志
 u8 gsm_rev_okflag = 0;      //gsm处理标志
 
+#define GSM_RESP_BUF_SIZE 64
+static char gsm_resp_buf[GSM_RESP_BUF_SIZE];
+static uint8_t gsm_resp_idx = 0;
+
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 {
 	  u8 ch;
 		if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断，可以扩展来控制
 		{
 			  if(RxCounter >= USART1_RXBUFF_SIZE) RxCounter = 0;
-				Usart1RecBuf[RxCounter++] =USART_ReceiveData(USART1);//接收模块的数据
-			  ch = USART_ReceiveData(USART1);
-			  if ((ch == 'O') && (gsm_rev_okflag == 0))  //如果收到字符'O'，便开始接收，
-				{
-					gsm_rev_start = 1;
+				ch = USART_ReceiveData(USART1);
+				Usart1RecBuf[RxCounter++] = ch;
+
+				// 收集GSM返回内容
+				if (gsm_resp_idx < GSM_RESP_BUF_SIZE - 1) {
+						gsm_resp_buf[gsm_resp_idx++] = ch;
+						gsm_resp_buf[gsm_resp_idx] = 0;
+						// 检查是否收到初始化或短信发送的OK
+						if (strstr(gsm_resp_buf, "ok")) {
+								gsm_rev_okflag = 1;
+								gsm_resp_idx = 0; // 清空缓冲区
+						}
+						// 行结束清空缓冲区，防止溢出
+						if (ch == '\n' || ch == '\r') {
+								gsm_resp_idx = 0;
+						}
+				} else {
+						gsm_resp_idx = 0;
 				}
-				
-				if (gsm_rev_start)
-				{
-					if (ch == 'K')//如果收到字符'K'，说明GSM相关操作已经执行完成
-					{
-						gsm_rev_okflag = 1;//完成标志位置1
-						gsm_rev_start = 0;
-					}
-				} 
     } 
 		if(USART_GetFlagStatus(USART1,USART_FLAG_ORE) == SET)
 		 {

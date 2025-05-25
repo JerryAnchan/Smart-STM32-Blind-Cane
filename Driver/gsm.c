@@ -4,78 +4,73 @@
 #include <string.h>
 #include <stdio.h>
 
-char PhoneNumber[PHONE_NUMBER_LEN] = "18888888888";
-char ConversionNum[CONVERSION_NUM_LEN] = {0};
+char PhoneNumber[PHONE_NUMBER_LEN] = "18543448120";
 uint8_t sendSmsFlag = 0;
 
-void PhoneNumTranscoding(void)
+// UTF-8字符串转16进制字符串
+void utf8_to_hexstr(const char* utf8, char* hexstr)
 {
-    uint8_t i = 0;
-    for(i = 0; i < 11; i++)
-    {
-        ConversionNum[i*4+0] = '0';
-        ConversionNum[i*4+1] = '0';
-        ConversionNum[i*4+2] = '3';
-        ConversionNum[i*4+3] = PhoneNumber[i];
+    while (*utf8) {
+        sprintf(hexstr, "%02X", (unsigned char)*utf8);
+        hexstr += 2;
+        utf8++;
     }
+    *hexstr = '\0';
 }
 
-void gsm_atcmd_send(char *at)
+// 初始化，仅发送一次smson命令
+void gsm_init(void)
 {
     unsigned short waittry;
-    do
-    {
-        gsm_rev_start = 0;
-        gsm_rev_okflag = 0;
+    gsm_rev_start = 0;
+    gsm_rev_okflag = 0;
+    do {
         waittry = 0;
-        uart1_send((unsigned char *)at, 0xFF);
+        uart1_send((unsigned char *)"config,set,smson,1,0,0,0,0,1,1\r\n", 0xFF);
         while(waittry++ < 3000)
         {
             if(gsm_rev_okflag == 1)
             {
-                return;
+                break;
             }
             delay_ms(1);
         }
+    } while(gsm_rev_okflag == 0);
+}
+
+static char hex_content[512] = {0};
+static char cmd[600] = {0};
+
+// 发送短信，内容需转16进制字符串
+void gsm_send_msg(const char* number, const char* content)
+{
+    unsigned short waittry;
+    utf8_to_hexstr(content, hex_content);
+    snprintf(cmd, sizeof(cmd), "config,set,sms,%s,%s\r\n", PhoneNumber, hex_content);
+
+    gsm_rev_start = 0;
+    gsm_rev_okflag = 0;
+    waittry = 0;
+    uart1_send((unsigned char *)cmd, 0xFF);
+    while(waittry++ < 3000)
+    {
+        if(gsm_rev_okflag == 1)
+        {
+            break;
+        }
+        delay_ms(1);
     }
-    while(gsm_rev_okflag == 0);
 }
 
-void gsm_init(void)
-{
-    gsm_atcmd_send("AT\r\n");
-    delay_ms(1000);
-}
-
-void gsm_send_msg(const char* number, char *content)
-{
-    uint8_t len;
-    unsigned char gsm_at_txbuf[60];
-    memset(gsm_at_txbuf, 0, 60);
-    strncpy((char *)gsm_at_txbuf, "AT+CMGS=\"", 9);
-    memcpy(gsm_at_txbuf + 9, number, 44);
-    len = strlen((char *)gsm_at_txbuf);
-    gsm_at_txbuf[len] = '"';
-    gsm_at_txbuf[len + 1] = '\r';
-    gsm_at_txbuf[len + 2] = '\n';
-    uart1_send(gsm_at_txbuf, 0xFF);
-    delay_ms(1000);
-    uart1_send((unsigned char *)content, 0xFF);
-    delay_ms(100);
-    printf("%c", 0x1a);
-    delay_ms(10);
-}
-
+// 兼容主程序调用
 void sim800_send(unsigned char *content)
 {
     uint8_t send_error = 0;
     uint16_t send_count = 0;
     gsm_rev_okflag = 0;
-    OLED_ShowStr(0, 6, "   Send Sms...  ", 2);
-    gsm_send_msg(ConversionNum, (char *)content);
-    delay_ms(200);
-    delay_ms(200);
-    delay_ms(200);
+    OLED_ShowStr(0, 6, "   Send SMS...  ", 2);
+    gsm_send_msg(PhoneNumber, (char *)content);
+    delay_ms(500);
     while(gsm_rev_okflag == 0)
     {
         if(send_count++ > 8000)
@@ -88,40 +83,9 @@ void sim800_send(unsigned char *content)
     }
     gsm_rev_okflag = 0;
     if(send_error == 1)
-        OLED_ShowStr(0, 6, "   Send Fail!   ", 2);
+        OLED_ShowStr(0, 6, "   Send FAIL!   ", 2);
     else
         OLED_ShowStr(0, 6, "   Send OK!     ", 2);
-    // UsartRx1BufClear(); // 如有需要请在主程序调用
-    delay_ms(200);
-    delay_ms(200);
-    delay_ms(200);
+    delay_ms(500);
     OLED_ShowStr(0, 6, "                ", 2);
-}
-
-void LongiAndLatiChangeUnicode(char *str1, char *str2)
-{
-    uint8_t i = 0, len;
-    char *buf = str1;
-    len = strlen(buf);
-    for(i = 0; i < 3; i++)
-    {
-        if(buf[i] != ' ')
-        {
-            *str2++ = '0';
-            *str2++ = '0';
-            *str2++ = '3';
-            *str2++ = buf[i];
-        }
-    }
-    *str2++ = '0'; *str2++ = '0';
-    *str2++ = '2'; *str2++ = 'E';
-    i++;
-    for(; i < len-1; i++)
-    {
-        *str2++ = '0';
-        *str2++ = '0';
-        *str2++ = '3';
-        *str2++ = buf[i];
-    }
-    *str2 = '\0';
 }

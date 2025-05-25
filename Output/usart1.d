@@ -16,3 +16,4 @@
 ..\output\usart1.o: ..\Libraries\inc\misc.h
 ..\output\usart1.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\output\usart1.o: ..\System\usart\usart1.h
+..\output\usart1.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
