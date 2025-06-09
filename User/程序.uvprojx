@@ -545,6 +545,11 @@
               <FileType>1</FileType>
               <FilePath>..\System\usart\usart3.c</FilePath>
             </File>
+            <File>
+              <FileName>usart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\usart\usart2.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

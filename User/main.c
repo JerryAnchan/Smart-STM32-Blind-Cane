@@ -4,19 +4,20 @@
 #include "OLED_I2C.h"
 #include "HC_SR04.h"
 #include "usart1.h"
+#include "usart2.h"
 #include "usart3.h"
 #include "timer.h"
 #include "iic.h"
 #include "adxl345.h"
 #include "wt588d.h"
 #include "GPS.h"
-#include "gsm.h"  // 添加 gsm.h 头文件
+#include "gsm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "stm32f10x_iwdg.h" // 添加头文件
-#include <math.h> // 添加此行
+#include "stm32f10x_iwdg.h" 
+#include <math.h> 
 
 // 闪存保存地址定义
 #define FLASH_SAVE_ADDR  ((u32)0x0800F000)
@@ -36,8 +37,8 @@ u8 GPS_rx_flag = 0;
 u8 gpsInitFlag = 0;
 
 // 系统状态变量
+float currentDistance = 10000;    // 1000cm，确保不会误报警
 u16 safetyDistance = 10;      // 安全距离阈值(cm)
-float currentDistance = 1000;    // 100cm，避免一上电就报警
 u8 distanceWarning = 0;       // 距离警告标志
 u8 displayTwinkle = 0;        // 显示闪烁标志
 u8 systemInitFlag = 1;        // 系统初始化标志
@@ -270,17 +271,14 @@ void FallDetection(void) {
     u8 i;
 
     // 采集加速度平均值
-    //OLED_ShowStr(0, 6, "       FD1", 1);
     adxl345_read_average(&ax, &ay, &az, ACCEL_SAMPLE_COUNT);
-    //OLED_ShowStr(0, 6, "       FD2", 1);
     
     // OLED调试显示
     sprintf((char *)displayBuffer, "X:%5.1f", ax);
     OLED_ShowStr(64, 6, displayBuffer, 1);
     sprintf((char *)displayBuffer, "Y:%5.1f", ay);
     OLED_ShowStr(64, 7, displayBuffer, 1);
-    OLED_ShowStr(0, 6, "Debug FD", 1);
-
+    //OLED_ShowStr(0, 6, "Debug FD", 1);
     // 判断是否倾倒
     if (fabsf(ax) >= FALL_ACCEL_THRESHOLD || fabsf(ay) >= FALL_ACCEL_THRESHOLD) {
         tiltDetected = 1;
@@ -288,7 +286,6 @@ void FallDetection(void) {
         tiltDetected = 0;
         fallTimer = FALL_TIMER_INIT; // 恢复计时器
     }
-
     // 跌倒判定
     if (fallTimer == 0) {
         if (fallDetected == 0) {
@@ -330,7 +327,7 @@ void Get_Distance(void) {
     if (currentDistance >= 4500) currentDistance = 4500; // 限制最大距离
     SprintfIntNum((u16)currentDistance / 10, (char *)displayBuffer);
     OLED_ShowStr(0, 0, displayBuffer, 2);
-    OLED_ShowStr(0, 6, "Debug GD", 1);
+   // OLED_ShowStr(0, 6, "Debug GD", 1);
 
     // 2. 处理距离警告
     if (emergencyMode == 0) {
@@ -420,6 +417,7 @@ int main(void) {
     
     // 串口初始化
     uart1_Init(9600);
+    USART2_Init();
     USART3_Init(9600);
     OLED_CLS();
     UsartRx1BufClear();
@@ -432,7 +430,7 @@ int main(void) {
     // GSM初始化
     OLED_ShowStr(0,2,"   GSM Init...  ",2);
     gsm_init();
-
+    //gsm_rev_okflag = 1;
     // 等待GSM模块初始化完成
     wait_count = 0;
     gsm_rev_okflag = 0;
@@ -450,51 +448,35 @@ int main(void) {
     */
     // 主循环
     while(1) {
-        //Uart1_SendStr("LoopA\r\n");
         // 处理按键输入
         KeySettings();
-        
-        //Uart1_SendStr("LoopB\r\n");
         // 显示主界面
         ShowHomePage();
-        
-        //Uart1_SendStr("LoopC\r\n");
         // 在非设置模式下更新传感器数据
         if(settingMode == 0) {
             if(refreshFlag == 1) {
                 refreshFlag = 0;
-                
                 // 更新GPS数据
                 Get_GPS();
-                
                 // 更新跌倒检测数据
                 FallDetection();
-            
                 // 更新距离数据
-                //Uart1_SendStr("GD_IN\r\n");
                 Get_Distance();
-                //Uart1_SendStr("GD_OUT\r\n");
-
                 if(sendSmsFlag != 0) {
                     memset(SEND_BUF, 0, 400);    // 清空缓冲区
-
                     if(sendSmsFlag == 1) {
                         strcpy(SEND_BUF, "注意,检测到用户跌倒,经度:"); // 直接用UTF-8汉字
                     }
                     if(sendSmsFlag == 2) {
                         strcpy(SEND_BUF, "用户主动求救,需要紧急救援,经度:"); // 直接用UTF-8汉字
                     }
-
                     // 拼接经度
                     sprintf(BUF1, "%10.6f", GPS.longitude_Degree);
                     strcat(SEND_BUF, BUF1);
-
                     strcat(SEND_BUF, ",纬度:"); // 逗号用中文逗号
-
                     // 拼接纬度
                     sprintf(BUF2, "%10.6f", GPS.latitude_Degree);
                     strcat(SEND_BUF, BUF2);
-
                     sim800_send((unsigned char *)SEND_BUF); // 发送短信
                     memset(BUF1, 0, 50);      // 清空缓冲区
                     memset(BUF2, 0, 50);      // 清空缓冲区
@@ -502,7 +484,6 @@ int main(void) {
                 }
             }
         }
-        
         //IWDG_ReloadCounter(); // 喂狗，防止复位
     }
 }
@@ -512,31 +493,54 @@ int main(void) {
  * 10ms中断一次，用于系统定时任务
  */
 void TIM2_IRQHandler(void) {
-    static u8 time_count1s = 0;    // 1秒计数器
-    static unsigned int timeCount = 0; // 时间计数器
-    
+    static u8 time_count1s = 0;
+    static unsigned int timeCount = 0;
     if(TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-        LED = GM; // 更新LED状态
-        
-        // 更新蜂鸣器状态
+        LED = GM;
         BeepUpdate();
-        
-        // 每100ms(10*10ms)设置刷新标志
-        if(timeCount++ >= 10) {
+        if(WATER == 1) 
+        {
+            StartBeep(5);
+        }
+        /*
+        if(WATER!= 1) 
+        {
+            StopBeep();
+        }
+        */
+        if(timeCount++ >= 10) 
+        {
             timeCount = 0;
             refreshFlag = 1;
         }
-        
-        // 每1秒(20*50ms)执行一次
         if(time_count1s++ >= 20) {
             time_count1s = 0;
-            
-            // 处理跌倒检测计时
             if(tiltDetected && fallTimer > 0) fallTimer--;
-            
-            // 更新秒计数器
             if(secondCounter > 0) secondCounter--;
         }
     }
+}
+
+void USART2_IRQHandler(void)
+{
+    u8 com_data;
+  if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) 
+  {
+      USART_ClearFlag(USART2,USART_FLAG_RXNE);
+      com_data = USART2->DR;	
+      //if(com_data == 0x30)//唤醒
+      if(com_data == 0x31)//语音求救
+      {
+            sendSmsFlag = 2;
+      }
+     
+      if(com_data == 0x32)//测距
+        {
+            char distStr[32];
+            sprintf(distStr, "%d", (int)(currentDistance/10));
+            Usart2_SendString(distStr); // 发送字符串
+        }
+      //if(com_data == 0x33)//保留
+   }
 }

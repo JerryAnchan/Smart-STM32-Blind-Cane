@@ -20,6 +20,8 @@
 ..\output\main.o: ..\Driver\OLED_I2C.h
 ..\output\main.o: ..\Driver\HC_SR04.h
 ..\output\main.o: ..\System\usart\usart1.h
+..\output\main.o: ..\System\usart\usart2.h
+..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\output\main.o: ..\System\usart\usart3.h
 ..\output\main.o: ..\Driver\timer.h
 ..\output\main.o: ..\Driver\iic.h
@@ -27,7 +29,6 @@
 ..\output\main.o: ..\Driver\wt588d.h
 ..\output\main.o: ..\Driver\GPS.h
 ..\output\main.o: ..\Driver\gsm.h
-..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 ..\output\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

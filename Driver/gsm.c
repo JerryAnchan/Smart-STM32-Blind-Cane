@@ -67,21 +67,33 @@ void sim800_send(unsigned char *content)
 {
     uint8_t send_error = 0;
     uint16_t send_count = 0;
-    gsm_rev_okflag = 0;
-    OLED_ShowStr(0, 6, "   Send SMS...  ", 2);
-    gsm_send_msg(PhoneNumber, (char *)content);
-    delay_ms(500);
-    while(gsm_rev_okflag == 0)
-    {
-        if(send_count++ > 8000)
+    uint8_t retry = 0;
+    const uint8_t max_retry = 3;
+
+    do {
+        send_error = 0;
+        send_count = 0;
+        gsm_rev_okflag = 0;
+        OLED_ShowStr(0, 6, "   Send SMS...  ", 2);
+        gsm_send_msg(PhoneNumber, (char *)content);
+        delay_ms(500);
+        while(gsm_rev_okflag == 0)
         {
-            send_count = 0;
-            send_error = 1;
-            break;
+            if(send_count++ > 8000)
+            {
+                send_error = 1;
+                break;
+            }
+            delay_ms(1);
         }
-        delay_ms(1);
-    }
-    gsm_rev_okflag = 0;
+        gsm_rev_okflag = 0;
+        if(send_error == 1) {
+            OLED_ShowStr(0, 6, " Send FAIL!Retry ", 2);
+            delay_ms(500);
+        }
+        retry++;
+    } while(send_error == 1 && retry < max_retry);
+
     if(send_error == 1)
         OLED_ShowStr(0, 6, "   Send FAIL!   ", 2);
     else

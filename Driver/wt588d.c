@@ -69,7 +69,12 @@ void StartBeep(unsigned char mode)
             beepOnTime = 15;
             beepOffTime = 15;
             break;
-            
+        case 5: // ½ô¼±±¨¾¯Ïì 5 ´Î
+            beepMaxCount = 2;
+            beepOnTime = 1;
+            beepOffTime = 1;
+            break;   
+
         default:
             return;
     }
