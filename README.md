@@ -2,7 +2,7 @@ Powered by GitHub Copilot.
 
 # Smart Blind Cane Based on STM32
 
-This project is a smart blind cane system based on the STM32 microcontroller. It integrates multiple sensors and modules to provide real-time safety monitoring, alerts, and user interaction, making it highly suitable for visually impaired users and elderly care.
+This project is a smart blind cane system based on the STM32F103C8T6 microcontroller. It integrates multiple sensors and modules to provide real-time safety monitoring, alerts, and user interaction, making it highly suitable for visually impaired users and elderly care.
 
 ## Key Features
 
