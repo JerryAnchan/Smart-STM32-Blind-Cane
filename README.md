@@ -31,8 +31,8 @@ This project is a smart blind cane system powered by the STM32F103C8T6 microcont
   - Supports both English and Chinese character display.
   - Displays critical emergency messages such as "Emergency SOS."
 
-- **SMS Alerts via GSM Module**
-  - Sends SMS alerts (with location information) using the SIM800 GSM module.
+- **SMS Alerts via 4G-LTE Module**
+  - Sends SMS alerts (with location information) using the Air724UG 4G-LTE module.
   - Retries SMS sending up to 3 times on failure.
   - Uses a custom protocol, encoding UTF-8 content as hexadecimal strings for compatibility.
 
