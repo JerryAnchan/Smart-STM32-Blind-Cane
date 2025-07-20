@@ -265,7 +265,7 @@ void CheckNewMcu(void) {
 void FallDetection(void) {
     #define ACCEL_SAMPLE_COUNT 5
     #define FALL_ACCEL_THRESHOLD 190.0f   // 跌倒判定阈值（可根据实际调整）
-    #define FALL_TIMER_INIT 8            // 跌倒计时初值
+    #define FALL_TIMER_INIT 2            // 跌倒计时初值
 
     float ax = 0, ay = 0, az = 0;
     u8 i;

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-char PhoneNumber[PHONE_NUMBER_LEN] = "18543448120";
+char PhoneNumber[PHONE_NUMBER_LEN] = "#####";
 uint8_t sendSmsFlag = 0;
 
 // UTF-8字符串转16进制字符串
