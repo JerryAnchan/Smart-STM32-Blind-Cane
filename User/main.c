@@ -2,7 +2,7 @@
 #include "delay.h"
 #include "gpio.h"
 #include "OLED_I2C.h"
-#include "HC_SR04.h"
+#include "VL53L1x_STM32.h"
 #include "usart1.h"
 #include "usart2.h"
 #include "usart3.h"
@@ -54,6 +54,7 @@ u8 sendFlag = 0x00;           // 发送标志
 float accelX, accelY, accelZ; // 加速度计数据
 float accelMagnitude, accelMagnitude2; // 加速度幅值
 bool emergencyMode = 0;       // 紧急模式标志
+u8 alarmEnable = 0;           // 报警使能(0=初始化静音,1=允许蜂鸣)
 //u8 sendSmsFlag = 0;           // 发送短信标志
 
 /**
@@ -212,7 +213,7 @@ void KeySettings(void)
                     }
                     if(fallDetected == 0) playTimeCounter = 0;
                     emergencyMode = 1;
-                    StartBeep(2);
+                    if(alarmEnable) StartBeep(2);
                 }
             }
         }
@@ -273,12 +274,14 @@ void FallDetection(void) {
     // 采集加速度平均值
     adxl345_read_average(&ax, &ay, &az, ACCEL_SAMPLE_COUNT);
     
+    /*
     // OLED调试显示
     sprintf((char *)displayBuffer, "X:%5.1f", ax);
     OLED_ShowStr(64, 6, displayBuffer, 1);
     sprintf((char *)displayBuffer, "Y:%5.1f", ay);
     OLED_ShowStr(64, 7, displayBuffer, 1);
     //OLED_ShowStr(0, 6, "Debug FD", 1);
+    */
     // 判断是否倾倒
     if (fabsf(ax) >= FALL_ACCEL_THRESHOLD || fabsf(ay) >= FALL_ACCEL_THRESHOLD) {
         tiltDetected = 1;
@@ -292,7 +295,7 @@ void FallDetection(void) {
             OLED_ShowStr(40, 0, "           ", 2);
             for (i = 0; i < 3; i++) OLED_ShowCN(i * 16 + 70, 0, i + 8, 0);
             fallDetected = 1;
-            StartBeep(1);
+            if(alarmEnable) StartBeep(1);
             sendSmsFlag = 1; // 设置发送短信标志
         }
     } else {
@@ -315,14 +318,55 @@ void FallDetection(void) {
  */
 void Get_Distance(void) {
     u8 i;
-    currentDistance = (Get_SR04_Distance() * 331) * 1.0 / 1000; // 获取距离并转换为毫米
+    uint16_t dist_mm;
+    static uint16_t last_valid_distance = 500;
+    static uint8_t error_count = 0;
+    static uint8_t wait_count = 0;
 
-    // 1. 检查超声波异常值
-    if (currentDistance == 0xFFFF) {
-        OLED_ShowStr(0, 6, "SR04 Error", 1);
-        delay_ms(500);
-        return;
+    dist_mm = VL53L1X_GetDistance();
+
+    // 1. 检查VL53L1X返回值
+    if (dist_mm == 0xFFFF) {
+        // I2C通信错误
+        error_count++;
+        if(error_count > 10) {
+            // 连续错误，显示FAIL
+            // OLED_ShowStr(70, 7, "FAIL", 1);
+            // 尝试重新初始化
+            if(error_count > 50) {
+                VL53L1X_Init();
+                error_count = 0;
+            }
+        }
+        dist_mm = last_valid_distance; // 使用上次值
+    } 
+    else if (dist_mm == 0) {
+        // 数据未准备好
+        wait_count++;
+        error_count = 0;
+        
+        // OLED_ShowStr(70, 7, "  WAIT", 1);
+        
+        if(wait_count > 150) {
+            wait_count = 0;
+            /* 等待过久则重启测距 */
+            VL53L1X_WriteReg16(0x0087, 0x00);
+            delay_ms(10);
+            VL53L1X_WriteReg16(0x0087, 0x40);
+        }
+        
+        return; // 直接返回，不更新距离
+    } 
+    else {
+        // 有效数据（包括0mm）
+        error_count = 0;
+        wait_count = 0;
+        last_valid_distance = dist_mm;
+        // OLED_ShowStr(70, 7, "OK  ", 1);
     }
+    
+    // currentDistance使用0.1cm单位保存，1mm 正好等于 0.1cm
+    currentDistance = dist_mm;
 
     if (currentDistance >= 4500) currentDistance = 4500; // 限制最大距离
     SprintfIntNum((u16)currentDistance / 10, (char *)displayBuffer);
@@ -331,12 +375,12 @@ void Get_Distance(void) {
 
     // 2. 处理距离警告
     if (emergencyMode == 0) {
-        if (currentDistance / 10 <= safetyDistance) {
+        if (currentDistance <= ((float)safetyDistance * 10.0f)) {
             if (distanceWarning == 0) {
                 distanceWarning = 1;
                 if (fallDetected == 0) playTimeCounter = 0;
                 for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 2, 0);
-                StartBeep(3); // 启动蜂鸣
+                if(alarmEnable) StartBeep(3); // 启动蜂鸣
                 delay_ms(200); // 延时
                 OLED_ShowStr(54, 0, "SET:", 2);
                 SprintfIntNum(safetyDistance, (char *)displayBuffer);
@@ -407,12 +451,190 @@ int main(void) {
     KEY_GPIO_Init();
     IIC_init();
     adxl345_init();
-    HC_SR04_IO_Init();
     LED_GPIO_Init();
     WT588D_GPIO_INIT();
     
-    // OLED初始化
+    // OLED初始化(必须先初始化，才能显示错误信息)
     OLED_Init();
+    OLED_CLS();
+    //OLED_ShowStr(0, 0, "I2C Init...", 2);
+    
+    // 初始化VL53L1X传感器
+    VL53L1X_I2C_Init();
+    //delay_ms(100);
+   //OLED_ShowStr(0, 0, "I2C Init OK ", 2);
+    //delay_ms(300);
+    
+    // I2C通信测试
+    OLED_CLS();
+    OLED_ShowStr(0, 0, "I2C Test...", 2);
+    delay_ms(300);
+    
+    {
+        uint8_t test_result;
+        char test_buf[20];
+        uint8_t found_addr = 0;
+        uint8_t device_count;
+        uint8_t simple_result;
+        uint8_t device_id;
+        uint8_t accessible_regs = 0;
+        uint8_t reg_count;
+        uint8_t boot_state;
+        
+        test_result = VL53L1X_I2C_Test();
+        
+        if(test_result != 0) {
+            OLED_CLS();
+            OLED_ShowStr(0, 0, "I2C Test Fail", 2);
+            sprintf(test_buf, "Err:%d", test_result);
+            OLED_ShowStr(0, 2, test_buf, 2);
+            
+            // 尝试扫描I2C总线
+            device_count = VL53L1X_I2C_Scan(&found_addr);
+            sprintf(test_buf, "Dev:0x%02X", found_addr);
+            OLED_ShowStr(0, 3, test_buf, 1);
+            
+            // 测试寄存器访问
+            reg_count = VL53L1X_TestRegAccess(&accessible_regs);
+            sprintf(test_buf, "Reg:0x%02X(%d)", accessible_regs, reg_count);
+            OLED_ShowStr(0, 4, test_buf, 1);
+            
+            // 简
+            simple_result = VL53L1X_SimpleTest();
+            sprintf(test_buf, "Step:%d/6", simple_result);
+            OLED_ShowStr(0, 5, test_buf, 1);
+            
+            if(accessible_regs == 0x01) {
+                // 只有0x00可访问,检查启动状态
+                boot_state = VL53L1X_CheckBootState();
+                sprintf(test_buf, "Boot:0x%02X", boot_state);
+                OLED_ShowStr(0, 6, test_buf, 1);
+                
+                if(boot_state == 0x01) {
+                    OLED_ShowStr(0, 7, "Boot OK!", 1);
+                } else if(boot_state == 0xFF) {
+                    OLED_ShowStr(0, 7, "Boot Rd Fail", 1);
+                } else {
+                    OLED_ShowStr(0, 7, "Booting...", 1);
+                }
+            } else if(accessible_regs > 0x01) {
+                OLED_ShowStr(0, 6, "Multi-reg OK", 1);
+            }
+            
+            while(1) delay_ms(1000);
+        }
+        
+        // I2C测试通过，读取实际ID
+        OLED_ShowStr(0, 0, "I2C Test OK!", 2);
+        delay_ms(300);
+        
+        device_id = VL53L1X_ReadID();
+        sprintf(test_buf, "ID:0x%02X", device_id);
+        OLED_ShowStr(0, 2, test_buf, 2);
+        
+        if(device_id == 0xEA || device_id == 0xEB) {
+            OLED_ShowStr(0, 4, "VL53L1X OK!", 1);
+        } else if(device_id == 0xCC) {
+            OLED_ShowStr(0, 4, "VL53L1 (old)", 1);
+        } else {
+            OLED_ShowStr(0, 4, "Unknown ID!", 1);
+            OLED_ShowStr(0, 5, "Try anyway..", 1);
+        }
+        
+        delay_ms(1500);
+    }
+    
+    OLED_CLS();
+    OLED_ShowStr(0, 0, "VL53L1X Test", 2);
+    delay_ms(500);
+    
+    // 多次尝试初始化
+    {
+        uint8_t init_result = 1;
+        uint8_t try_count;
+        char error_buf[20];
+        
+        OLED_CLS();
+        OLED_ShowStr(0, 0, "Initializing", 2);
+        OLED_ShowStr(0, 2, "Please wait...", 1);
+        delay_ms(300);
+        
+        for(try_count = 0; try_count < 3; try_count++) {
+            init_result = VL53L1X_Init();
+            if(init_result == 0) break;
+            
+            // 显示尝试次数
+            OLED_CLS();
+            sprintf(error_buf, "Try %d/3...", try_count + 1);
+            OLED_ShowStr(0, 0, error_buf, 2);
+            sprintf(error_buf, "Err:%d", init_result);
+            OLED_ShowStr(0, 2, error_buf, 1);
+            delay_ms(500);
+        }
+        
+        if(init_result != 0) {
+            OLED_CLS();
+            OLED_ShowStr(0, 0, "INIT FAIL!", 2);
+            
+            // 显示错误代码
+            sprintf(error_buf, "ErrCode:%d", init_result);
+            OLED_ShowStr(0, 2, error_buf, 1);
+            
+            if(init_result == 1) {
+                OLED_ShowStr(0, 3, "I2C Fail", 1);
+                OLED_ShowStr(0, 4, "Check:", 1);
+                OLED_ShowStr(0, 5, "SDA->PB4", 1);
+                OLED_ShowStr(0, 6, "SCL->PB5", 1);
+                OLED_ShowStr(0, 7, "Pullup 4.7K", 1);
+            } else if(init_result == 2) {
+                OLED_ShowStr(0, 3, "Boot Timeout", 1);
+                OLED_ShowStr(0, 4, "Check:", 1);
+                OLED_ShowStr(0, 5, "VDD Power", 1);
+                OLED_ShowStr(0, 6, "XSHUT->VCC", 1);
+                OLED_ShowStr(0, 7, "Try Reset", 1);
+            }
+            
+            while(1) delay_ms(1000); // 停止运行
+        }
+    }
+    
+    OLED_CLS();
+    OLED_ShowStr(0, 0, "VL53L1X OK!", 2);
+    OLED_ShowStr(0, 2, "Start Range..", 1);
+    delay_ms(300);
+    
+    // 再次确保测距启动
+    {
+        uint8_t start_result;
+        uint8_t retry;
+        char msg_buf[20];
+        uint8_t stat_06, stat_31;
+        
+        for(retry = 0; retry < 5; retry++) {
+            start_result = VL53L1X_StartRanging();
+            if(start_result == 0) {
+                OLED_ShowStr(0, 3, "Range Started!", 1);
+                break;
+            }
+            delay_ms(100);
+        }
+        
+        if(start_result != 0) {
+            OLED_ShowStr(0, 3, "Range Fail!", 1);
+            sprintf(msg_buf, "Try:%d", retry);
+            OLED_ShowStr(0, 4, msg_buf, 1);
+        }
+        
+        // 显示状态寄存器值用于诊断
+        VL53L1X_ReadStatus(&stat_06, &stat_31);
+        sprintf(msg_buf, "S06:%02X S31:%02X", stat_06, stat_31);
+        OLED_ShowStr(0, 5, msg_buf, 1);
+        
+        delay_ms(1000);
+    }
+    
+    // OLED已经初始化过了，这里不需要再初始化
+    // OLED_Init();
     OLED_CLS();
     
     // 串口初始化
@@ -430,7 +652,7 @@ int main(void) {
     // GSM初始化
     OLED_ShowStr(0,2,"   GSM Init...  ",2);
     gsm_init();
-    //gsm_rev_okflag = 1;
+    gsm_rev_okflag = 1;
     // 等待GSM模块初始化完成
     wait_count = 0;
     gsm_rev_okflag = 0;
@@ -438,6 +660,9 @@ int main(void) {
         delay_ms(1);
     }
     gsm_rev_okflag = 0;
+
+    /* 初始化阶段结束，解除静音门控 */
+    alarmEnable = 1;
 
     /*
     WDG_WriteAccessCmd(IWDG_WriteAccess_Enable); // 允许访问IWDG
@@ -499,7 +724,10 @@ void TIM2_IRQHandler(void) {
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
         LED = GM;
         BeepUpdate();
-        if(WATER == 1) 
+        if(!alarmEnable) {
+            StopBeep();
+        }
+        else if(WATER == 1) 
         {
             StartBeep(5);
         }
@@ -509,7 +737,7 @@ void TIM2_IRQHandler(void) {
             StopBeep();
         }
         */
-        if(timeCount++ >= 10) 
+        if(timeCount++ >= 2)  // 改为20ms刷新一次（原来100ms）
         {
             timeCount = 0;
             refreshFlag = 1;

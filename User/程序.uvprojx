@@ -471,9 +471,9 @@
               <FilePath>..\Driver\timer.c</FilePath>
             </File>
             <File>
-              <FileName>HC_SR04.c</FileName>
+              <FileName>VL53L1x_STM32.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Driver\HC_SR04.c</FilePath>
+              <FilePath>..\Driver\VL53L1x_STM32.c</FilePath>
             </File>
             <File>
               <FileName>adxl345.c</FileName>

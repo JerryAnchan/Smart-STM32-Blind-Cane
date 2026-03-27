@@ -2,19 +2,20 @@
     "configurations": [
         {
             "name": "Target 1",
+            "cStandard": "c90",
+            "cppStandard": "c++98",
             "intelliSenseMode": "${default}",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
             "includePath": [
-                "${workspaceFolder}/**",
-                "D:\\Keil_v5\\ARM\\ARMCC\\include",
-                "D:\\Keil_v5\\ARM\\ARMCC\\include\\rw",
+                "D:/Keil_v5/ARM/ARMCC/include",
+                "D:/Keil_v5/ARM/ARMCC/include/arm_linux",
+                "D:/Keil_v5/ARM/ARMCC/include/arm_linux_compat",
+                "D:/Keil_v5/ARM/ARMCC/include/rw",
                 "CMSIS",
-                "System\\delay",
-                "System\\sys",
-                "System\\usart",
+                "System/delay",
+                "System/sys",
+                "System/usart",
                 "User",
-                "Libraries\\inc",
+                "Libraries/inc",
                 "Driver"
             ],
             "defines": [

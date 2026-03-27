@@ -115,7 +115,7 @@ void adxl345_read_average(float *x, float *y, float *z, u8 times)
 {
     u8 i, err = 0;
     short tx, ty, tz;
-    char buf[32];
+    // char buf[32]; // 调试用，暂时注释
     *x = *y = *z = 0;
 
     if (times == 0) return;

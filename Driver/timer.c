@@ -68,7 +68,8 @@ void TIM3_Init(u16 arr,u16 psc)
 
 
 //定时器3中断服务程序	               主要记录溢出次数
-extern u16 TIM3_UPDATA;
+// VL53L1X替换HC_SR04后，TIM3_UPDATA变量定义在此处
+u16 TIM3_UPDATA = 0;
 void TIM3_IRQHandler(void)
 { 
 		if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
