@@ -93,7 +93,6 @@ u8 IIC_wait_ack()
 		if(tempTime>250)
 		{
 			IIC_stop();
-			//Uart1_SendStr("IIC_TO\r\n"); // º”’‚“ªæ‰
 			return 1;
 		}	 
 	}

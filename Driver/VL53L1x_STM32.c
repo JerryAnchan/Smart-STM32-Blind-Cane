@@ -221,7 +221,7 @@ uint8_t VL53L1X_WriteReg16(uint16_t reg, uint8_t data)
  */
 uint8_t VL53L1X_ReadReg16(uint16_t reg, uint8_t *data)
 {
-    // 写寄存器地址
+    // 先写寄存器地址，再重复起始进入读流程
     VL53L1X_I2C_Start();
     VL53L1X_I2C_SendByte(VL53L1X_I2C_ADDR); // 写地址
     if(VL53L1X_I2C_WaitAck()) {
@@ -241,7 +241,7 @@ uint8_t VL53L1X_ReadReg16(uint16_t reg, uint8_t *data)
         return 1;
     }
     
-    // Restart - 重新发起读操作
+    // Re-Start后切到读地址
     VL53L1X_I2C_Start();
     VL53L1X_I2C_SendByte(VL53L1X_I2C_ADDR | 0x01); // 读地址
     if(VL53L1X_I2C_WaitAck()) {
@@ -249,7 +249,7 @@ uint8_t VL53L1X_ReadReg16(uint16_t reg, uint8_t *data)
         return 1;
     }
     
-    *data = VL53L1X_I2C_ReadByte(0); // 读取数据，发送NACK
+    *data = VL53L1X_I2C_ReadByte(0); // 单字节读取后发送NACK结束
     VL53L1X_I2C_Stop();
     return 0;
 }
@@ -281,7 +281,7 @@ uint16_t VL53L1X_ReadReg16_16bit(uint16_t reg)
         return 0xFFFF;
     }
     
-    // Restart读取数据
+    // Re-Start后读取两个字节
     VL53L1X_I2C_Start();
     VL53L1X_I2C_SendByte(VL53L1X_I2C_ADDR | 0x01);
     if(VL53L1X_I2C_WaitAck()) {
@@ -297,38 +297,37 @@ uint16_t VL53L1X_ReadReg16_16bit(uint16_t reg)
 }
 
 /**
- * @brief I2C初始化
-    /**
-     * @brief 连续写多字节（单次I2C事务，VL53L1X支持地址自增）
-     * @param reg 起始寄存器(16位地址)
-     * @param data 数据缓冲区
-     * @param len 字节数
-     * @return 0=成功 1=失败
-     */
-    static uint8_t VL53L1X_WriteMultiBytes(uint16_t reg, const uint8_t *data, uint8_t len)
-    {
-        uint8_t i;
+ * @brief 连续写多字节（单次I2C事务，利用地址自增）
+ * @param reg 起始寄存器(16位地址)
+ * @param data 数据缓冲区
+ * @param len 字节数
+ * @return 0=成功 1=失败
+ */
+static uint8_t VL53L1X_WriteMultiBytes(uint16_t reg, const uint8_t *data, uint8_t len)
+{
+    uint8_t i;
 
-        VL53L1X_I2C_Start();
-        VL53L1X_I2C_SendByte(VL53L1X_I2C_ADDR);
+    VL53L1X_I2C_Start();
+    VL53L1X_I2C_SendByte(VL53L1X_I2C_ADDR);
+    if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
+
+    VL53L1X_I2C_SendByte(reg >> 8);
+    if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
+
+    VL53L1X_I2C_SendByte(reg & 0xFF);
+    if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
+
+    for(i = 0; i < len; i++) {
+        VL53L1X_I2C_SendByte(data[i]);
         if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
-
-        VL53L1X_I2C_SendByte(reg >> 8);
-        if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
-
-        VL53L1X_I2C_SendByte(reg & 0xFF);
-        if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
-
-        for(i = 0; i < len; i++) {
-            VL53L1X_I2C_SendByte(data[i]);
-            if(VL53L1X_I2C_WaitAck()) { VL53L1X_I2C_Stop(); return 1; }
-        }
-
-        VL53L1X_I2C_Stop();
-        return 0;
     }
 
-    /**
+    VL53L1X_I2C_Stop();
+    return 0;
+}
+
+/**
+ * @brief I2C初始化
  */
 void VL53L1X_I2C_Init(void)
 {

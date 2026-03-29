@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "stm32f10x_iwdg.h" 
 #include <math.h> 
 
 // 闪存保存地址定义
@@ -37,14 +36,14 @@ u8 GPS_rx_flag = 0;
 u8 gpsInitFlag = 0;
 
 // 系统状态变量
-float currentDistance = 10000;    // 1000cm，确保不会误报警
-u16 safetyDistance = 10;      // 安全距离阈值(cm)
-u8 distanceWarning = 0;       // 距离警告标志
-u8 displayTwinkle = 0;        // 显示闪烁标志
-u8 systemInitFlag = 1;        // 系统初始化标志
-u8 settingMode = 0;           // 设置模式(0:正常,1:设置安全距离)
-u8 refreshFlag = 0;           // 刷新显示标志
-u8 playTimeCounter = 0;       // 播放时间计数器
+float currentDistance = 10000;    // 以0.1cm为单位保存，初值1000cm避免上电误报
+u16 safetyDistance = 10;          // 安全距离阈值(cm)
+u8 distanceWarning = 0;           // 距离预警状态位
+u8 displayTwinkle = 0;            // 显示闪烁标志（预留）
+u8 systemInitFlag = 1;            // 首页重绘请求标志
+u8 settingMode = 0;               // 设置模式(0:正常,1:阈值,2~12:手机号各位)
+u8 refreshFlag = 0;               // 周期任务触发标志，由定时中断置位
+u8 playTimeCounter = 0;           // 播放时间计数器
 unsigned char secondCounter = 0; // 秒计数器
 unsigned char displayBuffer[16]; // 显示缓冲区
 u8 tiltDetected = 0;          // 倾斜检测标志
@@ -55,7 +54,11 @@ float accelX, accelY, accelZ; // 加速度计数据
 float accelMagnitude, accelMagnitude2; // 加速度幅值
 bool emergencyMode = 0;       // 紧急模式标志
 u8 alarmEnable = 0;           // 报警使能(0=初始化静音,1=允许蜂鸣)
-//u8 sendSmsFlag = 0;           // 发送短信标志
+
+// 基站定位回退坐标（GPS未锁定时使用）
+double lbs_longitude = 0;
+double lbs_latitude = 0;
+u8 lbs_valid = 0;
 
 /**
  * 清空串口1接收缓冲区
@@ -274,14 +277,7 @@ void FallDetection(void) {
     // 采集加速度平均值
     adxl345_read_average(&ax, &ay, &az, ACCEL_SAMPLE_COUNT);
     
-    /*
-    // OLED调试显示
-    sprintf((char *)displayBuffer, "X:%5.1f", ax);
-    OLED_ShowStr(64, 6, displayBuffer, 1);
-    sprintf((char *)displayBuffer, "Y:%5.1f", ay);
-    OLED_ShowStr(64, 7, displayBuffer, 1);
-    //OLED_ShowStr(0, 6, "Debug FD", 1);
-    */
+
     // 判断是否倾倒
     if (fabsf(ax) >= FALL_ACCEL_THRESHOLD || fabsf(ay) >= FALL_ACCEL_THRESHOLD) {
         tiltDetected = 1;
@@ -325,14 +321,12 @@ void Get_Distance(void) {
 
     dist_mm = VL53L1X_GetDistance();
 
-    // 1. 检查VL53L1X返回值
+    // 检查VL53L1X返回值
     if (dist_mm == 0xFFFF) {
-        // I2C通信错误
+        // I2C通信错误：暂用上次有效值并累计错误计数
         error_count++;
         if(error_count > 10) {
-            // 连续错误，显示FAIL
-            // OLED_ShowStr(70, 7, "FAIL", 1);
-            // 尝试重新初始化
+            // 连续错误后执行重初始化，降低死锁概率
             if(error_count > 50) {
                 VL53L1X_Init();
                 error_count = 0;
@@ -341,15 +335,13 @@ void Get_Distance(void) {
         dist_mm = last_valid_distance; // 使用上次值
     } 
     else if (dist_mm == 0) {
-        // 数据未准备好
+        // 数据未准备好：只等待，不改写显示值
         wait_count++;
         error_count = 0;
         
-        // OLED_ShowStr(70, 7, "  WAIT", 1);
-        
         if(wait_count > 150) {
             wait_count = 0;
-            /* 等待过久则重启测距 */
+            // 长时间未出新数据则重启测距状态机
             VL53L1X_WriteReg16(0x0087, 0x00);
             delay_ms(10);
             VL53L1X_WriteReg16(0x0087, 0x40);
@@ -358,11 +350,10 @@ void Get_Distance(void) {
         return; // 直接返回，不更新距离
     } 
     else {
-        // 有效数据（包括0mm）
+        // 有效数据（含0mm）
         error_count = 0;
         wait_count = 0;
         last_valid_distance = dist_mm;
-        // OLED_ShowStr(70, 7, "OK  ", 1);
     }
     
     // currentDistance使用0.1cm单位保存，1mm 正好等于 0.1cm
@@ -371,9 +362,8 @@ void Get_Distance(void) {
     if (currentDistance >= 4500) currentDistance = 4500; // 限制最大距离
     SprintfIntNum((u16)currentDistance / 10, (char *)displayBuffer);
     OLED_ShowStr(0, 0, displayBuffer, 2);
-   // OLED_ShowStr(0, 6, "Debug GD", 1);
 
-    // 2. 处理距离警告
+    // 处理距离警告
     if (emergencyMode == 0) {
         if (currentDistance <= ((float)safetyDistance * 10.0f)) {
             if (distanceWarning == 0) {
@@ -422,11 +412,21 @@ void Get_GPS(void) {
         timeCount = 0;
     }
     
-    // 显示GPS经纬度信息
-    sprintf((char *)displayBuffer, "%10.6f ", GPS.longitude_Degree);
-    OLED_ShowStr(40, 2, (u8*)displayBuffer, 2);
-    sprintf((char *)displayBuffer, "%10.6f ", GPS.latitude_Degree);
-    OLED_ShowStr(40, 4, (u8*)displayBuffer, 2);
+    // 优先显示GPS坐标，未锁定时回退到基站定位坐标
+    if(gpsInitFlag) {
+        sprintf((char *)displayBuffer, "%10.6f ", GPS.longitude_Degree);
+        OLED_ShowStr(40, 2, (u8*)displayBuffer, 2);
+        sprintf((char *)displayBuffer, "%10.6f ", GPS.latitude_Degree);
+        OLED_ShowStr(40, 4, (u8*)displayBuffer, 2);
+    } else if(lbs_valid) {
+        sprintf((char *)displayBuffer, "%10.6f*", lbs_longitude);
+        OLED_ShowStr(40, 2, (u8*)displayBuffer, 2);
+        sprintf((char *)displayBuffer, "%10.6f*", lbs_latitude);
+        OLED_ShowStr(40, 4, (u8*)displayBuffer, 2);
+    } else {
+        OLED_ShowStr(40, 2, "  No Fix  ", 2);
+        OLED_ShowStr(40, 4, "  No Fix  ", 2);
+    }
 }
 
 /**
@@ -457,13 +457,9 @@ int main(void) {
     // OLED初始化(必须先初始化，才能显示错误信息)
     OLED_Init();
     OLED_CLS();
-    //OLED_ShowStr(0, 0, "I2C Init...", 2);
     
     // 初始化VL53L1X传感器
     VL53L1X_I2C_Init();
-    //delay_ms(100);
-   //OLED_ShowStr(0, 0, "I2C Init OK ", 2);
-    //delay_ms(300);
     
     // I2C通信测试
     OLED_CLS();
@@ -633,8 +629,7 @@ int main(void) {
         delay_ms(1000);
     }
     
-    // OLED已经初始化过了，这里不需要再初始化
-    // OLED_Init();
+    // OLED已在前面完成初始化，这里只清屏
     OLED_CLS();
     
     // 串口初始化
@@ -661,16 +656,18 @@ int main(void) {
     }
     gsm_rev_okflag = 0;
 
+    // 开启基站定位并获取初始坐标，作为GPS未锁定时的回退
+    OLED_ShowStr(0, 2, " LBS Init...    ", 2);
+    gsm_lbs_init();
+    if(gsm_get_lbs(&lbs_longitude, &lbs_latitude)) {
+        lbs_valid = 1;
+    }
+    OLED_CLS();
+
     /* 初始化阶段结束，解除静音门控 */
     alarmEnable = 1;
 
-    /*
-    WDG_WriteAccessCmd(IWDG_WriteAccess_Enable); // 允许访问IWDG
-    IWDG_SetPrescaler(IWDG_Prescaler_64);         // 预分频64
-    IWDG_SetReload(1562);                         // 约2秒超时(40kHz/64/1562 ≈ 1.0s，可根据需要调整)
-    IWDG_ReloadCounter();                         // 喂一次狗
-    IWDG_Enable();                                // 使能看门狗
-    */
+
     // 主循环
     while(1) {
         // 处理按键输入
@@ -687,29 +684,50 @@ int main(void) {
                 FallDetection();
                 // 更新距离数据
                 Get_Distance();
+                // GPS未锁定且基站定位无效时，周期性重试基站查询
+                if(gpsInitFlag == 0 && lbs_valid == 0) {
+                    static u16 lbs_retry_counter = 0;
+                    if(lbs_retry_counter++ >= 1500) { // 约30秒(1500×20ms)
+                        lbs_retry_counter = 0;
+                        if(gsm_get_lbs(&lbs_longitude, &lbs_latitude)) {
+                            lbs_valid = 1;
+                        }
+                    }
+                }
+
                 if(sendSmsFlag != 0) {
-                    memset(SEND_BUF, 0, 400);    // 清空缓冲区
+                    memset(SEND_BUF, 0, 400);
                     if(sendSmsFlag == 1) {
-                        strcpy(SEND_BUF, "注意,检测到用户跌倒,经度:"); // 直接用UTF-8汉字
+                        strcpy(SEND_BUF, "注意,检测到用户跌倒,经度:");
                     }
                     if(sendSmsFlag == 2) {
-                        strcpy(SEND_BUF, "用户主动求救,需要紧急救援,经度:"); // 直接用UTF-8汉字
+                        strcpy(SEND_BUF, "用户主动求救,需要紧急救援,经度:");
                     }
-                    // 拼接经度
-                    sprintf(BUF1, "%10.6f", GPS.longitude_Degree);
-                    strcat(SEND_BUF, BUF1);
-                    strcat(SEND_BUF, ",纬度:"); // 逗号用中文逗号
-                    // 拼接纬度
-                    sprintf(BUF2, "%10.6f", GPS.latitude_Degree);
-                    strcat(SEND_BUF, BUF2);
-                    sim800_send((unsigned char *)SEND_BUF); // 发送短信
-                    memset(BUF1, 0, 50);      // 清空缓冲区
-                    memset(BUF2, 0, 50);      // 清空缓冲区
+                    // 优先使用GPS坐标，未锁定时回退到基站坐标
+                    if(gpsInitFlag) {
+                        sprintf(BUF1, "%10.6f", GPS.longitude_Degree);
+                        strcat(SEND_BUF, BUF1);
+                        strcat(SEND_BUF, ",纬度:");
+                        sprintf(BUF2, "%10.6f", GPS.latitude_Degree);
+                        strcat(SEND_BUF, BUF2);
+                    } else if(lbs_valid) {
+                        sprintf(BUF1, "%10.6f", lbs_longitude);
+                        strcat(SEND_BUF, BUF1);
+                        strcat(SEND_BUF, "(基站),纬度:");
+                        sprintf(BUF2, "%10.6f", lbs_latitude);
+                        strcat(SEND_BUF, BUF2);
+                        strcat(SEND_BUF, "(基站)");
+                    } else {
+                        strcat(SEND_BUF, "未知,纬度:未知");
+                    }
+                    sim800_send((unsigned char *)SEND_BUF);
+                    memset(BUF1, 0, 50);
+                    memset(BUF2, 0, 50);
                     sendSmsFlag = 0;
                 }
             }
         }
-        //IWDG_ReloadCounter(); // 喂狗，防止复位
+
     }
 }
 
@@ -731,12 +749,7 @@ void TIM2_IRQHandler(void) {
         {
             StartBeep(5);
         }
-        /*
-        if(WATER!= 1) 
-        {
-            StopBeep();
-        }
-        */
+
         if(timeCount++ >= 2)  // 改为20ms刷新一次（原来100ms）
         {
             timeCount = 0;
@@ -753,22 +766,22 @@ void TIM2_IRQHandler(void) {
 void USART2_IRQHandler(void)
 {
     u8 com_data;
-  if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) 
-  {
-      USART_ClearFlag(USART2,USART_FLAG_RXNE);
-      com_data = USART2->DR;	
-      //if(com_data == 0x30)//唤醒
-      if(com_data == 0x31)//语音求救
-      {
+    if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        USART_ClearFlag(USART2, USART_FLAG_RXNE);
+        com_data = USART2->DR;
+
+        // 语音模块串口协议：0x31=触发求救短信，0x32=回传当前距离(cm)
+        if(com_data == 0x31)
+        {
             sendSmsFlag = 2;
-      }
-     
-      if(com_data == 0x32)//测距
+        }
+
+        if(com_data == 0x32)
         {
             char distStr[32];
-            sprintf(distStr, "%d", (int)(currentDistance/10));
-            Usart2_SendString(distStr); // 发送字符串
+            sprintf(distStr, "%d", (int)(currentDistance / 10));
+            Usart2_SendString(distStr);
         }
-      //if(com_data == 0x33)//保留
-   }
+    }
 }

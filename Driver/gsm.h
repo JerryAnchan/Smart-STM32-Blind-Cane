@@ -18,5 +18,7 @@ void PhoneNumTranscoding(void);
 void gsm_init(void);
 void gsm_send_msg(const char* number, const char* content);
 void sim800_send(unsigned char *content);
+void gsm_lbs_init(void);
+uint8_t gsm_get_lbs(double *lon, double *lat);
 
 #endif

@@ -1,8 +1,6 @@
 #include "HC_SR04.h"
-//#include "timer.h"
 #include "delay.h"
-#include "OLED_I2C.h"
-//////////////////////////////////////////////////////////////////////////////////	 
+
 
 void HC_SR04_IO_Init(void)
 {
@@ -38,7 +36,6 @@ u16  Get_SR04_Distance(void)
     timeout = 30000;   // 约30ms超时
     while(!SR04_Echo) {
         if(--timeout == 0) return 0xFFFF;
-        //OLED_ShowStr(0, 7, "Loop E1", 1);
     }
 
     TIM_SetCounter(TIM3, 0);
@@ -48,7 +45,6 @@ u16  Get_SR04_Distance(void)
     timeout = 30000;   // 约30ms超时
     while(SR04_Echo) {
         if(--timeout == 0) return 0xFFFF;
-        //OLED_ShowStr(0, 7, "Loop E2", 1);
     }
 
     TIM_Cmd(TIM3, DISABLE);
