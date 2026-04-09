@@ -22,7 +22,7 @@ User/Listings/
 *.hex.asm
 *.iex
 *.lst
-
+*.lxb18
 # ========== 示例工程（非本项目源码） ==========
 Example/
 
