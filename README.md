@@ -8,7 +8,7 @@ A smart cane based on STM32F103C8 with laser ranging, fall detection, GPS/LBS du
 
 | Module | Model | Interface | Pins |
 |--------|-------|-----------|------|
-| MCU | STM32F103C8 | — | — |
+| MCU | STM32F103C8T6 | — | — |
 | Laser Ranging | VL53L1X | I2C | SDA=PB4, SCL=PB5 |
 | Accelerometer | ADXL345 | I2C | SDA=PC14, SCL=PC15 |
 | GPS | GPS Module | USART3 | 9600bps |
@@ -67,9 +67,3 @@ A smart cane based on STM32F103C8 with laser ranging, fall detection, GPS/LBS du
    - Key scan → UI refresh → GPS parse → fall detection → distance update
    - Distance below threshold → buzzer + voice alert
    - Fall confirmed / manual SOS → automatic emergency SMS with coordinates
-
-## Related Documentation
-
-- [VL53L1X_QuickRef.md](VL53L1X_QuickRef.md) — VL53L1X quick reference
-- [VL53L1X_Integration_Notes.md](VL53L1X_Integration_Notes.md) — Integration notes
-- [VL53L1X_Troubleshooting.md](VL53L1X_Troubleshooting.md) — Troubleshooting guide
