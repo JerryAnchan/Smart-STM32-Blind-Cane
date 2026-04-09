@@ -1,52 +1,75 @@
-﻿# STM32 Smart Cane Project (VL53L1X + Air780EPM)
+﻿Powered by GitHub Copilot.
 
-This project is based on STM32F10x and targets smart cane scenarios, providing obstacle ranging, fall detection, GPS positioning, and 4G-based alerting.
+# STM32 Smart Cane (VL53L1X + Air780EPM)
+
+A smart cane based on STM32F103C8 with laser ranging, fall detection, GPS/LBS dual-mode positioning, and GSM SMS alerting.
 
 ## Hardware Overview
 
-- MCU: STM32F10x
-- Distance Sensor: VL53L1X ToF (I2C, SDA=PB4, SCL=PB5)
-- Accelerometer: ADXL345 (fall detection)
-- Positioning: GPS module
-- 4G Communication Module: Air780EPM (alert/SMS/data channel)
-- Display: OLED
-- Voice/Keys/Buzzer: local interaction and alerting
+| Module | Model | Interface | Pins |
+|--------|-------|-----------|------|
+| MCU | STM32F103C8 | — | — |
+| Laser Ranging | VL53L1X | I2C | SDA=PB4, SCL=PB5 |
+| Accelerometer | ADXL345 | I2C | SDA=PC14, SCL=PC15 |
+| GPS | GPS Module | USART3 | 9600bps |
+| GSM | SIM800C | USART1 | 9600bps |
+| Display | OLED 128×64 | I2C | SDA=PB6, SCL=PB7 |
+| Buzzer | Active Buzzer | GPIO | PC13 |
+| Keys | 5-Key | GPIO | PB12~15, PA8 |
+| Light/Water Sensor | — | GPIO | PA1 (light), PB9 (water) |
 
-## Key Features
+## Features
 
-- Forward obstacle detection and threshold warning
-- Fall detection and emergency alarm
-- GPS location reporting
-- Air780EPM-based 4G communication and alerts
-- Real-time OLED status display
-- Key-based parameter configuration (safety distance, contact number, etc.)
+- **Obstacle Ranging**: VL53L1X with 0–4.5 m range; configurable safety distance threshold
+- **Fall Detection**: ADXL345 acceleration magnitude check; confirmed after 2 s of sustained tilt
+- **Dual-Mode Positioning**: GPS preferred; automatic fallback to cell tower (LBS) coordinates when GPS has no fix
+- **SMS Alert**: Automatic emergency SMS with coordinates on fall detection or manual SOS
+- **Real-Time OLED Display**: Distance, latitude/longitude, and settings
+- **Key Configuration**: Safety distance threshold and contact phone number (flash-saved, power-off persistent)
+- **Voice Interaction**: USART2 communication with voice module (0x31 = SOS, 0x32 = query distance)
 
-## Software Layout
+## Directory Structure
 
-- User/main.c: main control loop, event handling, UI logic
-- Driver/VL53L1x_STM32.c: VL53L1X driver and ranging initialization
-- Driver/gsm.c: 4G communication flow (project baseline: Air780EPM)
-- System/, Libraries/: platform and low-level support
+```
+├── CMSIS/              # Cortex-M3 startup files
+├── Driver/             # Peripheral drivers + application modules
+│   ├── VL53L1x_STM32.c/h   # VL53L1X ranging driver
+│   ├── adxl345.c/h          # ADXL345 accelerometer
+│   ├── GPS.c/h              # GPS NMEA parser
+│   ├── gsm.c/h              # SIM800C SMS / LBS positioning
+│   ├── OLED_I2C.c/h         # OLED display driver
+│   ├── gpio.c/h             # Buzzer / keys / LED / sensor IO
+│   ├── wt588d.c/h           # Buzzer state machine
+│   ├── app_ui.c/h           # UI display and key settings
+│   ├── app_sensor.c/h       # Sensor processing (ranging / fall / GPS)
+│   └── app_utils.c/h        # Flash init / UART buffer clear / data conversion
+├── Libraries/          # STM32 Standard Peripheral Library
+├── System/             # Delay / system config / UART drivers
+├── User/               # Main program + project file
+│   ├── main.c               # Main control logic + interrupt handlers
+│   └── 程序.uvprojx          # Keil project file
+├── Example/            # ST official VL53L1X reference projects (not the main build target)
+└── Output/             # Build output (gitignored)
+```
 
 ## Build and Flash
 
-1. Open User/程序.uvprojx in Keil.
-2. Select the target.
-3. Build and flash to the board.
-4. Power on and observe OLED/serial output.
+1. Open `User/程序.uvprojx` in Keil µVision
+2. Select Target 1, click Build
+3. Flash to the STM32F103C8 board
+4. Power on and observe the OLED self-test sequence: I2C Test → VL53L1X Init → GSM Init → LBS Init
 
-## Runtime Notes
+## Runtime Flow
 
-- The system performs sensor and communication checks during startup.
-- In the main loop, it continuously updates distance, fall state, and GPS data.
-- On alarm events, alerts are triggered locally and through Air780EPM.
+1. **Power-On Self-Test**: I2C bus test → VL53L1X device ID check → sensor initialization (halts with diagnostics on failure)
+2. **GSM/LBS Init**: SIM800C module ready → acquire cell tower coordinates as GPS fallback
+3. **Main Loop** (20 ms cycle):
+   - Key scan → UI refresh → GPS parse → fall detection → distance update
+   - Distance below threshold → buzzer + voice alert
+   - Fall confirmed / manual SOS → automatic emergency SMS with coordinates
 
-## Important Notes
+## Related Documentation
 
-- The 4G module in this project is standardized as Air780EPM.
-- If a different 4G module is used, update AT commands and initialization in Driver/gsm.c.
-- Ranging accuracy can be further tuned with offset/linear calibration in the VL53L1X driver.
-
-## About Example/
-
-The Example/ directory keeps ST official VL53L1X reference projects for behavior comparison and debugging. It is not the main build target of this repository.
+- [VL53L1X_QuickRef.md](VL53L1X_QuickRef.md) — VL53L1X quick reference
+- [VL53L1X_Integration_Notes.md](VL53L1X_Integration_Notes.md) — Integration notes
+- [VL53L1X_Troubleshooting.md](VL53L1X_Troubleshooting.md) — Troubleshooting guide
