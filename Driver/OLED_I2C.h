@@ -1,3 +1,7 @@
+/**
+ * @file OLED_I2C.h
+ * @brief 128x64 OLED显示屏驱动接口（SSD1306, I2C通信）
+ */
 #ifndef __OLED_I2C_H
 #define	__OLED_I2C_H
 

@@ -120,8 +120,8 @@
 //       6   0
 //      5:0	 条目位 报告FIFO存储的数据值的数量
 
-//#define slaveaddress 0XA6//write
-#define regaddress 0XA7//read
+//#define slaveaddress 0XA6//write  ← 已在上方定义为0xA6
+#define regaddress 0XA7 // 读地址(0xA6|0x01)
 #define DEVICE_ID 0X00
 void adxl345_init(void);
 u8 adxl345_read_reg(u8 addr);

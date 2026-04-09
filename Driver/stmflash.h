@@ -1,15 +1,18 @@
+/**
+ * @file stmflash.h
+ * @brief STM32内部Flash读写驱动接口
+ *
+ * Flash容量: 256KB, 起始地址: 0x08000000
+ * 扇区大小: 2048字节（对256KB及以上型号）
+ */
 #ifndef __STMFLASH_H__
 #define __STMFLASH_H__
 #include "sys.h"  
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//用户根据自己的需要设置
-#define STM32_FLASH_SIZE 256 	 		//所选STM32的FLASH容量大小(单位为K)
-#define STM32_FLASH_WREN 1              //使能FLASH写入(0，不是能;1，使能)
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+#define STM32_FLASH_SIZE 256 	 		// Flash容量(KB)
+#define STM32_FLASH_WREN 1              // 使能Flash写入(0=禁止, 1=使能)
 
-//FLASH起始地址
-#define STM32_FLASH_BASE 0x08000000 	//STM32 FLASH的起始地址
+#define STM32_FLASH_BASE 0x08000000 	// STM32 Flash起始地址
  
  
 

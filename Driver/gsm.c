@@ -1,3 +1,12 @@
+/**
+ * @file gsm.c
+ * @brief GSM模块驱动（短信发送 + 基站定位）
+ *
+ * 模块: SIM800C/DTU，通过串口1通信
+ * 协议: config指令集（非标准AT指令）
+ * 短信: UTF-8内容转十六进制串后发送
+ * 定位: 基站LBS作为GPS未锁定时的回退坐标源
+ */
 #include "gsm.h"
 #include "usart1.h"
 #include "delay.h"
@@ -19,7 +28,10 @@ void utf8_to_hexstr(const char* utf8, char* hexstr)
     *hexstr = '\0';
 }
 
-/* 初始化短信功能：等待模块回包OK后再退出 */
+/**
+ * @brief 初始化短信功能，发送配置指令并等待模块回包OK
+ * @note  超时阈值3000ms，若超时则重发直到成功
+ */
 void gsm_init(void)
 {
     unsigned short waittry;
@@ -28,7 +40,7 @@ void gsm_init(void)
     do {
         waittry = 0;
         uart1_send((unsigned char *)"config,set,smson,1,0,0,0,0,1,1\r\n", 0xFF);
-        while(waittry++ < 3000)
+        while(waittry++ < 3000) // 3秒超时
         {
             if(gsm_rev_okflag == 1)
             {
@@ -42,7 +54,12 @@ void gsm_init(void)
 static char hex_content[512] = {0};
 static char cmd[600] = {0};
 
-/* 发送短信：内容按模块要求使用16进制字符串 */
+/**
+ * @brief 发送短信（内容自动转HEX编码）
+ * @param number 目标号码（未使用，实际以PhoneNumber全局变量为准）
+ * @param content UTF-8短信内容
+ * @note  等待回包超时上限3000ms
+ */
 void gsm_send_msg(const char* number, const char* content)
 {
     unsigned short waittry;
@@ -63,7 +80,11 @@ void gsm_send_msg(const char* number, const char* content)
     }
 }
 
-/* 兼容主程序历史接口，内部带超时重试 */
+/**
+ * @brief 发送短信兼容接口（带超时重试，最多3次）
+ * @param content 短信内容(UTF-8)
+ * @note  等待回包超时上限8000ms，用于账准较长的短信网络延迟
+ */
 void sim800_send(unsigned char *content)
 {
     uint8_t send_error = 0;
@@ -103,7 +124,10 @@ void sim800_send(unsigned char *content)
     OLED_ShowStr(0, 6, "                ", 2);
 }
 
-/* 开启基站定位功能，需在 gsm_init 之后调用 */
+/**
+ * @brief 开启基站定位功能，需在gsm_init之后调用
+ * @note  等待回包超时上限5000ms
+ */
 void gsm_lbs_init(void)
 {
     unsigned short waittry;

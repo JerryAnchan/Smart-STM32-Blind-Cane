@@ -1,4 +1,17 @@
-/* wt588d.c 文件内容 */
+/**
+ * @file wt588d.c
+ * @brief 蜂鸣器驱动（软件PWM状态机控制）
+ *
+ * 引脚: PC13 推挽输出
+ * 模式参数表:
+ *   mode 0: 不响
+ *   mode 1: 快速短响×8 (150ms响/150ms停) — 跌倒报警
+ *   mode 2: 长响×4    (500ms响/50ms停)  — 紧急求助
+ *   mode 3: 单响×5    (1ms响/1ms停)    — 距离警告
+ *   mode 4: 急促短响×8 (15ms响/15ms停)  — 保留
+ *   mode 5: 单响×2    (1ms响/1ms停)    — 水位报警
+ * 调用: BeepUpdate()应在定时中断中以≥1ms周期调用
+ */
 #include "wt588d.h"
 #include "delay.h"
 #include "sys.h"
@@ -17,6 +30,9 @@ unsigned int beepOnTime = 0;       // 响持续时间(ms)
 unsigned int beepOffTime = 0;      // 静音持续时间(ms)
 unsigned int beepTimer = 0;        // 计时计数器
 
+/**
+ * @brief 初始化蜂鸣器GPIO（PC13推挽输出，默认高电平关闭）
+ */
 void WT588D_GPIO_INIT(void) {
     GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -127,6 +143,9 @@ void BeepUpdate(void)
     }
 }
 
+/**
+ * @brief 停止蜂鸣器，立即置低并重置状态机
+ */
 void StopBeep(void) {
     beepState = BEEP_IDLE;
     BEEP_OUT = 0;

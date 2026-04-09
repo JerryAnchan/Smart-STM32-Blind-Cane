@@ -1,11 +1,21 @@
+/**
+ * @file timer.c
+ * @brief 通用定时器配置（TIM2系统节拍 + TIM3超声波计时）
+ *
+ * 时钟源: APB1=36MHz, 定时器时钟=APB1×2=72MHz
+ * TIM2: 系统10ms节拍，优先级(0,2)
+ * TIM3: 超声波回波计时，优先级(0,1)，初始化后处于禁止状态
+ */
 #include "timer.h"
 #include "delay.h"
 
-//通用定时器中断初始化
-//这里时钟选择为APB1的2倍，而APB1为36M
-//arr：自动重装值。
-//psc：时钟预分频数
-//这里使用的是定时器2
+/**
+ * @brief 初始化TIM2（系统节拍定时器）
+ * @param arr 自动重装值
+ * @param psc 预分频系数
+ * @note  中断周期 = (arr+1)*(psc+1)/72MHz
+ *        例: arr=499, psc=7199 → 500*7200/72M = 50ms…实际代码使用arr=499,psc=7199得50ms
+ */
 void TIM2_Init(u16 arr,u16 psc)
 {	 
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -34,11 +44,12 @@ void TIM2_Init(u16 arr,u16 psc)
   TIM_Cmd(TIM2,ENABLE ); 	//使能定时器2
 }
 
-//通用定时器中断初始化
-//这里时钟选择为APB1的2倍，而APB1为36M
-//arr：自动重装值。
-//psc：时钟预分频数
-//这里使用的是定时器3!
+/**
+ * @brief 初始化TIM3（超声波回波计时用，初始化后处于禁止状态）
+ * @param arr 自动重装值
+ * @param psc 预分频系数
+ * @note  中断优先级(0,1)高于TIM2(0,2)，确保计时精度
+ */
 void TIM3_Init(u16 arr,u16 psc)
 {
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;

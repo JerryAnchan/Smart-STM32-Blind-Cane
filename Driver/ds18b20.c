@@ -1,3 +1,11 @@
+/**
+ * @file ds18b20.c
+ * @brief DS18B20数字温度传感器驱动（1-Wire协议）
+ *
+ * 引脚: PA11 （需外接4.7K上拉电阻）
+ * 精度: 0.0625°C (12位分辨率)
+ * 转换时间: 约750ms
+ */
 #include "ds18b20.h"
 #include "delay.h"	
 

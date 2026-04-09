@@ -1,9 +1,25 @@
+/**
+ * @file gpio.c
+ * @brief 系统GPIO初始化（蜂鸣器、按键、LED/光敏、水位传感器）
+ *
+ * 引脚分配:
+ *   蜂鸣器  PC13  推挽输出
+ *   KEY1~4  PB12~15  上拉输入
+ *   KEY5    PA8      上拉输入
+ *   LED     PA0      输出
+ *   GM(光敏) PA1      下拉输入
+ *   WATER   PB9      由硬件外部定义
+ */
 #include "gpio.h"
 
 //////////////////////////////////////////////////////////////////////////////////	 
 //蜂鸣器，按键的GPIO设置								  
 ////////////////////////////////////////////////////////////////////////////////// 	   
 
+/**
+ * @brief 初始化蜂鸣器GPIO（PC13推挽输出，默认低电平关闭）
+ * @note  需同时开启AFIO时钟并禁用JTAG，否则PB3/PB4不可用
+ */
 void BEEP_GPIO_Init(void)
 {
 	 GPIO_InitTypeDef  GPIO_InitStructure;
@@ -18,6 +34,9 @@ void BEEP_GPIO_Init(void)
    GPIO_ResetBits(GPIOC,GPIO_Pin_13);   //输出低电平
 }
 
+/**
+ * @brief 初始化按键GPIO（PB12~15 + PA8 上拉输入，按下为低）
+ */
 void KEY_GPIO_Init(void)
 {
 	 GPIO_InitTypeDef  GPIO_InitStructure;
@@ -37,6 +56,9 @@ void KEY_GPIO_Init(void)
 	 GPIO_Init(GPIOA, &GPIO_InitStructure);			
 }
 
+/**
+ * @brief 初始化LED及光敏传感器GPIO（PA1下拉输入读取光敏电平）
+ */
 void LED_GPIO_Init(void)
 {
 	 GPIO_InitTypeDef  GPIO_InitStructure;

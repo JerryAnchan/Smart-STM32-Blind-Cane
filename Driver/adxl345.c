@@ -1,3 +1,11 @@
+/**
+ * @file adxl345.c
+ * @brief ADXL345三轴加速度计驱动（软件I2C）
+ *
+ * I2C地址: 0xA6(W) / 0xA7(R)（ALT ADDRESS接地）
+ * 量程: ±16g，13位分辨率（4mg/LSB）
+ * 采样率: 100Hz
+ */
 #include "adxl345.h"
 #include "iic.h"
 #include "delay.h"
@@ -12,13 +20,13 @@ void adxl345_init()
         return;
     }
 
-    adxl345_write_reg(0X31, 0X0B); // 13位模式 ±16g
-    adxl345_write_reg(0x2C, 0x0B); // 100Hz
-    adxl345_write_reg(0x2D, 0x08); // 进入测量模式
-    adxl345_write_reg(0X2E, 0x00); // 禁用中断
-    adxl345_write_reg(0X1E, 0x00);
-    adxl345_write_reg(0X1F, 0x00);
-    adxl345_write_reg(0X20, 0x05);
+    adxl345_write_reg(0X31, 0X0B); // DATA_FORMAT: 13位模式 ±16g
+    adxl345_write_reg(0x2C, 0x0B); // BW_RATE: 100Hz采样率
+    adxl345_write_reg(0x2D, 0x08); // POWER_CTL: 进入测量模式
+    adxl345_write_reg(0X2E, 0x00); // INT_ENABLE: 禁用中断
+    adxl345_write_reg(0X1E, 0x00); // OFSX: X轴偏移=0
+    adxl345_write_reg(0X1F, 0x00); // OFSY: Y轴偏移=0
+    adxl345_write_reg(0X20, 0x05); // OFSZ: Z轴偏移补偿
 }
 
 /**

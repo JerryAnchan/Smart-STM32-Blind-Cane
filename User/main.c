@@ -1,3 +1,17 @@
+/**
+ * @file main.c
+ * @brief 系统主控逻辑（测距 + 跌倒检测 + GPS/LBS定位 + GSM短信告警）
+ *
+ * 目标平台: STM32F103 + VL53L1X + ADXL345 + GPS + SIM800C
+ * 外设概览:
+ *   VL53L1X  — 激光测距 (I2C, PB4/PB5)
+ *   ADXL345  — 三轴加速度计/跌倒检测 (I2C, PC14/PC15)
+ *   GPS      — 定位 (USART3, 9600bps)
+ *   SIM800C  — GSM短信+基站定位 (USART1, 9600bps)
+ *   OLED     — 128x64显示屏 (I2C, PB6/PB7)
+ *   蜂鸣器  — 报警音 (PC13)
+ *   按键   — 5键操作 (PB12~15, PA8)
+ */
 #include "sys.h"
 #include "delay.h"
 #include "gpio.h"
@@ -12,22 +26,14 @@
 #include "wt588d.h"
 #include "GPS.h"
 #include "gsm.h"
+#include "app_ui.h"
+#include "app_sensor.h"
+#include "app_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <math.h> 
-
-// 闪存保存地址定义
-#define FLASH_SAVE_ADDR  ((u32)0x0800F000)
-
-// 串口接收缓冲区定义
-#define STM32_RX3_BUF       Usart3RecBuf
-#define STM32_Rx3Counter    Rx3Counter
-#define STM32_RX3BUFF_SIZE  USART3_RXBUFF_SIZE
-
-// GPS信息结构和相关标志
-#define GPS_STR_LEN 48
+#include <math.h>
 GPS_INFO GPS;
 extern unsigned char rev_start;
 extern unsigned char rev_stop;
@@ -49,385 +55,16 @@ unsigned char displayBuffer[16]; // 显示缓冲区
 u8 tiltDetected = 0;          // 倾斜检测标志
 u8 fallDetected = 0;          // 跌倒检测标志
 u8 fallTimer = 10;            // 跌倒计时器
-u8 sendFlag = 0x00;           // 发送标志
+u8 sendFlag = 0x00;           // 发送标志位域: bit1(0x02)=手动求救已发
 float accelX, accelY, accelZ; // 加速度计数据
 float accelMagnitude, accelMagnitude2; // 加速度幅值
 bool emergencyMode = 0;       // 紧急模式标志
 u8 alarmEnable = 0;           // 报警使能(0=初始化静音,1=允许蜂鸣)
 
 // 基站定位回退坐标（GPS未锁定时使用）
-double lbs_longitude = 0;
-double lbs_latitude = 0;
-u8 lbs_valid = 0;
-
-/**
- * 清空串口1接收缓冲区
- */
-void UsartRx1BufClear(void) {
-    memset(Usart1RecBuf, 0, USART1_RXBUFF_SIZE);
-    RxCounter = 0;
-}
-
-/**
- * 将整数转换为浮点数(除以10)
- * @param dat 输入整数
- * @return 转换后的浮点数
- */
-float ChangeFloatData(int dat) {
-    return (float)(dat)/10;
-}
-
-/**
- * 将整数格式化为距离字符串(带单位cm)
- * @param data 距离数据(cm)
- * @param str 输出字符串缓冲区
- */
-void SprintfIntNum(u16 data, char *str) {
-    if(data > 99) {
-        sprintf(str, "%dcm", data);
-    } else if(data > 9) {
-        sprintf(str, "%dcm ", data);
-    } else {
-        sprintf(str, "%dcm  ", data);
-    }
-}
-
-/**
- * 显示主界面
- */
-void ShowHomePage(void) {
-    char i;
-    
-    // 如果需要初始化界面
-    if(systemInitFlag == 1) {
-        systemInitFlag = 0;
-        OLED_CLS(); // 清屏
-        
-        // 显示设置区域
-        OLED_ShowStr(54, 0, "SET:", 2);
-        SprintfIntNum(safetyDistance, (char *)displayBuffer);
-        OLED_ShowStr(87, 0, displayBuffer, 2);
-        
-        // 显示固定文本内容
-        for(i = 0; i < 2; i++) OLED_ShowCN(i*16, 2, i+26, 0);
-        for(i = 0; i < 2; i++) OLED_ShowCN(i*16, 4, i+28, 0);
-        OLED_ShowChar(32, 2, ':', 2, 0);
-        OLED_ShowChar(32, 4, ':', 2, 0);
-    }
-}
-
-/**
- * 显示设置值
- */
-void DisplaySetValue(void) {
-    u8 add = 2, i;
-    // 设置手机号时显示数字，并高亮当前位
-    if(settingMode >= 2) {
-        for(i = 0; i < 11; i++) {
-            if(i == (settingMode - 2)) {
-                // 当前正在设置的位高亮显示（如反白或加下划线，具体看你的OLED库支持）
-                OLED_ShowChar((add++)*8, 4, PhoneNumber[i], 2, 1); // 1为高亮
-            } else {
-                OLED_ShowChar((add++)*8, 4, PhoneNumber[i], 2, 0);
-            }
-        }
-        return;
-    }
-    // 其它模式下的显示
-    if(settingMode == 0) {
-        SprintfIntNum(safetyDistance, (char *)displayBuffer);
-        OLED_ShowStr(87, 0, displayBuffer, 2);
-    } else if(settingMode == 1) {
-        SprintfIntNum(safetyDistance, (char *)displayBuffer);
-        OLED_ShowStr(50, 4, displayBuffer, 2);
-    }
-}
-
-/**
- * 按键设置处理
- */
-void KeySettings(void)
-{
-    char i;
-    // KEY1: 切换设置模式
-    if(KEY1 == 0) {
-        delay_ms(20);
-        if(KEY1 == 0) {
-            while(KEY1 == 0);
-            settingMode++;
-            if(settingMode > 12) {
-                settingMode = 0;
-                STMFLASH_Write(FLASH_SAVE_ADDR + 0x40, (u16*)PhoneNumber, 11); // 保存手机号
-                STMFLASH_Write(FLASH_SAVE_ADDR + 0x60, &safetyDistance, 1); // 保存安全距离
-                systemInitFlag = 1;
-            }
-            if(settingMode == 1) {
-                OLED_CLS();
-                for(i = 0; i < 6; i++) OLED_ShowCN(i*16+16, 0, i+30, 0); // 设置提醒距离
-            }
-            if(settingMode == 2) {
-                for(i = 0; i < 8; i++) OLED_ShowCN(i*16, 0, i+11, 0); // 设置接收短信号码
-            }
-            DisplaySetValue();
-        }
-    }
-    // KEY2: 增加
-    if(KEY2 == 0) {
-        if(settingMode != 0) delay_ms(80);
-        else delay_ms(50);
-        if(KEY2 == 0) {
-            if(settingMode == 1) {
-                if(safetyDistance < 450) safetyDistance++;
-                DisplaySetValue();
-            }
-            if(settingMode >= 2) {
-                PhoneNumber[settingMode-2]++;
-                if(PhoneNumber[settingMode-2] > '9') PhoneNumber[settingMode-2] = '0';
-                DisplaySetValue();
-            }
-        }
-    }
-    // KEY3: 减少
-    if(KEY3 == 0) {
-        if(settingMode != 0) delay_ms(80);
-        else delay_ms(50);
-        if(KEY3 == 0) {
-            if(settingMode == 1) {
-                if(safetyDistance > 0) safetyDistance--;
-                DisplaySetValue();
-            }
-            if(settingMode >= 2) {
-                PhoneNumber[settingMode-2]--;
-                if(PhoneNumber[settingMode-2] < '0') PhoneNumber[settingMode-2] = '9';
-                DisplaySetValue();
-            }
-        }
-    }
-    // KEY4: 一键求助
-    if(KEY4 == 0) {
-        delay_ms(20);
-        if(KEY4 == 0) {
-            while(KEY4 == 0);
-            if(settingMode == 0) {
-                if(emergencyMode == 0) {
-                    if(!(sendFlag & 0x02)) {
-                        sendFlag |= 0x02;
-                        sendSmsFlag = 2;
-                    }
-                    if(fallDetected == 0) playTimeCounter = 0;
-                    emergencyMode = 1;
-                    if(alarmEnable) StartBeep(2);
-                }
-            }
-        }
-    }
-    // KEY5: 取消求助
-    if(KEY5 == 0) {
-        delay_ms(20);
-        if(KEY5 == 0) {
-            while(KEY5 == 0);
-            if(settingMode == 0) {
-                if(emergencyMode == 1) {
-                    emergencyMode = 0;
-                    sendFlag &= 0xFD;
-                    StopBeep(); // 立即停止蜂鸣器
-                    OLED_ShowStr(54, 0, "SET:", 2);
-                    SprintfIntNum(safetyDistance, (char *)displayBuffer);
-                    OLED_ShowStr(87, 0, displayBuffer, 2);
-                }
-            }
-        }
-    }
-}
-
-/**
- * 检查并初始化新MCU
- */
-void CheckNewMcu(void) {
-    u8 comper_str[6];
-    
-    // 读取闪存中的标识字符串
-    STM32F10x_Read(FLASH_SAVE_ADDR + 0x10, (u16*)comper_str, 5);
-    comper_str[5] = '\0';
-    
-    // 如果标识字符串不存在，则初始化
-    if(strstr((char *)comper_str, "FDYDZ") == NULL) {
-        STMFLASH_Write(FLASH_SAVE_ADDR + 0x10, (u16*)"FDYDZ", 5);
-        delay_ms(50);
-        STMFLASH_Write(FLASH_SAVE_ADDR + 0x60, &safetyDistance, 1);
-    }
-    
-    // 读取保存的安全距离
-    STM32F10x_Read(FLASH_SAVE_ADDR + 0x60, &safetyDistance, 1);
-    if(safetyDistance > 400) safetyDistance = 30; // 安全距离超出范围则重置
-    delay_ms(100);
-}
-
-/**
- * 跌倒检测处理
- */
-void FallDetection(void) {
-    #define ACCEL_SAMPLE_COUNT 5
-    #define FALL_ACCEL_THRESHOLD 190.0f   // 跌倒判定阈值（可根据实际调整）
-    #define FALL_TIMER_INIT 2            // 跌倒计时初值
-
-    float ax = 0, ay = 0, az = 0;
-    u8 i;
-
-    // 采集加速度平均值
-    adxl345_read_average(&ax, &ay, &az, ACCEL_SAMPLE_COUNT);
-    
-
-    // 判断是否倾倒
-    if (fabsf(ax) >= FALL_ACCEL_THRESHOLD || fabsf(ay) >= FALL_ACCEL_THRESHOLD) {
-        tiltDetected = 1;
-    } else {
-        tiltDetected = 0;
-        fallTimer = FALL_TIMER_INIT; // 恢复计时器
-    }
-    // 跌倒判定
-    if (fallTimer == 0) {
-        if (fallDetected == 0) {
-            OLED_ShowStr(40, 0, "           ", 2);
-            for (i = 0; i < 3; i++) OLED_ShowCN(i * 16 + 70, 0, i + 8, 0);
-            fallDetected = 1;
-            if(alarmEnable) StartBeep(1);
-            sendSmsFlag = 1; // 设置发送短信标志
-        }
-    } else {
-        if (fallDetected == 1) {
-            fallDetected = 0;
-            StopBeep(); // 跌倒恢复时立即停止蜂鸣器
-            if (emergencyMode == 1) {
-                for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 36, 0);
-            } else {
-                OLED_ShowStr(54, 0, "SET:", 2);
-                SprintfIntNum(safetyDistance, (char *)displayBuffer);
-                OLED_ShowStr(87, 0, displayBuffer, 2);
-            }
-        }
-    }
-}
-
-/**
- * 获取并处理距离数据
- */
-void Get_Distance(void) {
-    u8 i;
-    uint16_t dist_mm;
-    static uint16_t last_valid_distance = 500;
-    static uint8_t error_count = 0;
-    static uint8_t wait_count = 0;
-
-    dist_mm = VL53L1X_GetDistance();
-
-    // 检查VL53L1X返回值
-    if (dist_mm == 0xFFFF) {
-        // I2C通信错误：暂用上次有效值并累计错误计数
-        error_count++;
-        if(error_count > 10) {
-            // 连续错误后执行重初始化，降低死锁概率
-            if(error_count > 50) {
-                VL53L1X_Init();
-                error_count = 0;
-            }
-        }
-        dist_mm = last_valid_distance; // 使用上次值
-    } 
-    else if (dist_mm == 0) {
-        // 数据未准备好：只等待，不改写显示值
-        wait_count++;
-        error_count = 0;
-        
-        if(wait_count > 150) {
-            wait_count = 0;
-            // 长时间未出新数据则重启测距状态机
-            VL53L1X_WriteReg16(0x0087, 0x00);
-            delay_ms(10);
-            VL53L1X_WriteReg16(0x0087, 0x40);
-        }
-        
-        return; // 直接返回，不更新距离
-    } 
-    else {
-        // 有效数据（含0mm）
-        error_count = 0;
-        wait_count = 0;
-        last_valid_distance = dist_mm;
-    }
-    
-    // currentDistance使用0.1cm单位保存，1mm 正好等于 0.1cm
-    currentDistance = dist_mm;
-
-    if (currentDistance >= 4500) currentDistance = 4500; // 限制最大距离
-    SprintfIntNum((u16)currentDistance / 10, (char *)displayBuffer);
-    OLED_ShowStr(0, 0, displayBuffer, 2);
-
-    // 处理距离警告
-    if (emergencyMode == 0) {
-        if (currentDistance <= ((float)safetyDistance * 10.0f)) {
-            if (distanceWarning == 0) {
-                distanceWarning = 1;
-                if (fallDetected == 0) playTimeCounter = 0;
-                for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 2, 0);
-                if(alarmEnable) StartBeep(3); // 启动蜂鸣
-                delay_ms(200); // 延时
-                OLED_ShowStr(54, 0, "SET:", 2);
-                SprintfIntNum(safetyDistance, (char *)displayBuffer);
-                OLED_ShowStr(87, 0, displayBuffer, 2);
-                delay_ms(200);
-            }
-        } else {
-            distanceWarning = 0;
-        }
-    } else {
-        for (i = 0; i < 4; i++) OLED_ShowCN(i * 16 + 54, 0, i + 36, 0);
-    }
-}
-
-/**
- * 获取并处理GPS数据
- */
-void Get_GPS(void) {
-    static u8 errorNum = 0;
-    static u8 timeCount = 0;
-    
-    // 每5个周期处理一次GPS数据
-    if(rev_stop == 1 && timeCount++ >= 5) {
-        if(GPS_RMC_Parse(STM32_RX3_BUF, &GPS)) {
-            // GPS解析成功
-            errorNum = 0;
-            gps_flag = 0;
-            rev_stop = 0;
-            gpsInitFlag = 1;
-        } else {
-            // GPS解析失败
-            if(errorNum++ >= 30) {
-                errorNum = 30;
-                gpsInitFlag = 0;
-            }
-            gps_flag = 0;
-            rev_stop = 0;
-        }
-        timeCount = 0;
-    }
-    
-    // 优先显示GPS坐标，未锁定时回退到基站定位坐标
-    if(gpsInitFlag) {
-        sprintf((char *)displayBuffer, "%10.6f ", GPS.longitude_Degree);
-        OLED_ShowStr(40, 2, (u8*)displayBuffer, 2);
-        sprintf((char *)displayBuffer, "%10.6f ", GPS.latitude_Degree);
-        OLED_ShowStr(40, 4, (u8*)displayBuffer, 2);
-    } else if(lbs_valid) {
-        sprintf((char *)displayBuffer, "%10.6f*", lbs_longitude);
-        OLED_ShowStr(40, 2, (u8*)displayBuffer, 2);
-        sprintf((char *)displayBuffer, "%10.6f*", lbs_latitude);
-        OLED_ShowStr(40, 4, (u8*)displayBuffer, 2);
-    } else {
-        OLED_ShowStr(40, 2, "  No Fix  ", 2);
-        OLED_ShowStr(40, 4, "  No Fix  ", 2);
-    }
-}
+double lbs_longitude = 0;  // 基站经度(WGS84度)
+double lbs_latitude = 0;   // 基站纬度(WGS84度)
+u8 lbs_valid = 0;              // 基站坐标是否有效(0=未获取, 1=有效)
 
 /**
  * 主函数
@@ -461,14 +98,18 @@ int main(void) {
     // 初始化VL53L1X传感器
     VL53L1X_I2C_Init();
     
-    // I2C通信测试
+    /*
+     * ===== 上电自检：I2C通信 =====
+     * I2C总线测试 → 设备ID读取 → 启动状态检查
+     * 任一步骤失败则锁死(while(1))并在OLED展示接线提示
+     */
     OLED_CLS();
     OLED_ShowStr(0, 0, "I2C Test...", 2);
-    delay_ms(300);
+    delay_ms(100);
     
     {
         uint8_t test_result;
-        char test_buf[20];
+        unsigned char test_buf[20];
         uint8_t found_addr = 0;
         uint8_t device_count;
         uint8_t simple_result;
@@ -517,12 +158,12 @@ int main(void) {
                 OLED_ShowStr(0, 6, "Multi-reg OK", 1);
             }
             
-            while(1) delay_ms(1000);
+            while(1) delay_ms(100);
         }
         
         // I2C测试通过，读取实际ID
         OLED_ShowStr(0, 0, "I2C Test OK!", 2);
-        delay_ms(300);
+        delay_ms(100);
         
         device_id = VL53L1X_ReadID();
         sprintf(test_buf, "ID:0x%02X", device_id);
@@ -537,23 +178,26 @@ int main(void) {
             OLED_ShowStr(0, 5, "Try anyway..", 1);
         }
         
-        delay_ms(1500);
+        delay_ms(150);
     }
     
     OLED_CLS();
     OLED_ShowStr(0, 0, "VL53L1X Test", 2);
-    delay_ms(500);
+    delay_ms(100);
     
-    // 多次尝试初始化
+    /*
+     * VL53L1X初始化：最多3次重试，每次间隔500ms
+     * 失败则锁死并显示错误码 + 接线提示(SDA→PB4, SCL→PB5)
+     */
     {
         uint8_t init_result = 1;
         uint8_t try_count;
-        char error_buf[20];
+        unsigned char error_buf[20];
         
         OLED_CLS();
         OLED_ShowStr(0, 0, "Initializing", 2);
         OLED_ShowStr(0, 2, "Please wait...", 1);
-        delay_ms(300);
+        delay_ms(100);
         
         for(try_count = 0; try_count < 3; try_count++) {
             init_result = VL53L1X_Init();
@@ -590,7 +234,7 @@ int main(void) {
                 OLED_ShowStr(0, 7, "Try Reset", 1);
             }
             
-            while(1) delay_ms(1000); // 停止运行
+            while(1) delay_ms(100); // 停止运行
         }
     }
     
@@ -599,7 +243,10 @@ int main(void) {
     OLED_ShowStr(0, 2, "Start Range..", 1);
     delay_ms(300);
     
-    // 再次确保测距启动
+    /*
+     * 启动测距：最多5次重试 + 状态寄存器(0x06/0x31)诊断
+     * 启动失败为非致命错误，继续运行（可能后续自恢复）
+     */
     {
         uint8_t start_result;
         uint8_t retry;
@@ -641,8 +288,9 @@ int main(void) {
     GPS_rx_flag = 1;
     
     // 定时器初始化
-    TIM2_Init(500-1, 7199);  // 10ms中断
-    TIM3_Init(7199, 0);      // 用于其他定时功能
+    // TIM2: (499+1)*(7199+1)/72MHz = 50ms中断周期
+    TIM2_Init(500-1, 7199);
+    TIM3_Init(7199, 0);      // TIM3: 72MHz无分频，用于超声波回波计时
     
     // GSM初始化
     OLED_ShowStr(0,2,"   GSM Init...  ",2);
@@ -651,7 +299,7 @@ int main(void) {
     // 等待GSM模块初始化完成
     wait_count = 0;
     gsm_rev_okflag = 0;
-    while(gsm_rev_okflag == 0 && wait_count++ < 5000) {
+    while(gsm_rev_okflag == 0 && wait_count++ < 5000) { // 5000×1ms=5秒超时上限
         delay_ms(1);
     }
     gsm_rev_okflag = 0;
@@ -695,6 +343,10 @@ int main(void) {
                     }
                 }
 
+                /*
+                 * 组装并发送求救短信
+                 * 坐标来源三级回退: GPS坐标 → 基站坐标(标记"基站") → "未知"
+                 */
                 if(sendSmsFlag != 0) {
                     memset(SEND_BUF, 0, 400);
                     if(sendSmsFlag == 1) {
@@ -703,6 +355,7 @@ int main(void) {
                     if(sendSmsFlag == 2) {
                         strcpy(SEND_BUF, "用户主动求救,需要紧急救援,经度:");
                     }
+                    Serial_SendByte(0x35); // ASR Pro: "正在发送求救信号，请耐心等待"
                     // 优先使用GPS坐标，未锁定时回退到基站坐标
                     if(gpsInitFlag) {
                         sprintf(BUF1, "%10.6f", GPS.longitude_Degree);
@@ -732,8 +385,14 @@ int main(void) {
 }
 
 /**
- * 定时器2中断处理函数
- * 10ms中断一次，用于系统定时任务
+ * TIM2中断处理函数（10ms节拍）
+ *
+ * 职责:
+ * - LED状态同步光敏传感器
+ * - 蜂鸣器状态机更新(BeepUpdate)
+ * - 水位报警检测
+ * - 20ms(2×10ms)置位refreshFlag触发主循环任务
+ * - 200ms(20×10ms)跌倒倒计时递减
  */
 void TIM2_IRQHandler(void) {
     static u8 time_count1s = 0;
@@ -745,17 +404,17 @@ void TIM2_IRQHandler(void) {
         if(!alarmEnable) {
             StopBeep();
         }
-        else if(WATER == 1) 
+        else if(WATER == 0) 
         {
             StartBeep(5);
         }
 
-        if(timeCount++ >= 2)  // 改为20ms刷新一次（原来100ms）
+        if(timeCount++ >= 2)  // 2×10ms=20ms刷新周期
         {
             timeCount = 0;
             refreshFlag = 1;
         }
-        if(time_count1s++ >= 20) {
+        if(time_count1s++ >= 20) { // 20×10ms=200ms，跌倒倒计时精度
             time_count1s = 0;
             if(tiltDetected && fallTimer > 0) fallTimer--;
             if(secondCounter > 0) secondCounter--;
@@ -763,6 +422,13 @@ void TIM2_IRQHandler(void) {
     }
 }
 
+/**
+ * USART2中断处理（语音模块串口协议）
+ *
+ * 协议: 单字节指令
+ *   0x31 = 触发求救短信
+ *   0x32 = 请求回传当前距离(cm)
+ */
 void USART2_IRQHandler(void)
 {
     u8 com_data;

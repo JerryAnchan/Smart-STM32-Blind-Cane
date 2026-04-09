@@ -1,3 +1,11 @@
+/**
+ * @file GPS.c
+ * @brief GPS NMEA-0183协议解析（支持RMC/GGA/GSV语句）
+ *
+ * 卧文格式: $GPRMC, $GPGGA, $GPGSV
+ * 坐标输出: WGS84 ddd.dddddd度格式
+ * 时区转换: UTC+8 北京时间
+ */
 #include "GPS.h"
 #include <string.h>
 
@@ -43,10 +51,6 @@ int GPS_RMC_Parse(char *line,GPS_INFO *GPS)
             longitude_Degreetmp   = (int)GPS->longitude / 100;	//获取度
             long_cent_tmp         = (GPS->longitude - longitude_Degreetmp * 100);//获取分
 					  GPS->longitude_Degree = (long_cent_tmp /60.0) + longitude_Degreetmp;
-					
-//            speed_tmp      = Get_Float_Number(&buf[GetComma(7, buf)]);    //速度(单位：海里/时)
-//            GPS->speed     = speed_tmp * 1.85;                           //1海里=1.85公里
-//            GPS->direction = Get_Float_Number(&buf[GetComma(8, buf)]); //角度
 
             GPS->D.hour    = (buf[7] - '0') * 10 + (buf[8] - '0');		//时间
             GPS->D.minute  = (buf[9] - '0') * 10 + (buf[10] - '0');
@@ -415,7 +419,7 @@ static void UTC2BTC(DATE_TIME *GPS)
         }
     }
 
-    GPS->hour = GPS->hour + 8;
+    GPS->hour = GPS->hour + 8; // UTC+8 北京时区
     if(GPS->hour > 23)
     {
         GPS->hour -= 24;

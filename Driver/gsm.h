@@ -1,3 +1,7 @@
+/**
+ * @file gsm.h
+ * @brief GSM模块接口（短信发送 / 基站定位）
+ */
 #ifndef __GSM_H
 #define __GSM_H
 

@@ -1,3 +1,7 @@
+/**
+ * @file ds18b20.h
+ * @brief DS18B20数字温度传感器接口（PA11, 1-Wire）
+ */
 #ifndef __DS18B20_H
 #define __DS18B20_H 
 #include "sys.h"   

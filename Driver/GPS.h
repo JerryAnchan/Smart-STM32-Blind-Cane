@@ -1,3 +1,7 @@
+/**
+ * @file GPS.h
+ * @brief GPS数据结构与NMEA解析接口
+ */
 #ifndef __GPS_H_
 #define __GPS_H_
 
@@ -14,10 +18,10 @@ typedef struct{
 }DATE_TIME;
 
 typedef  struct{
-	double  latitude;  //经度
-	double  longitude; //纬度
-	double  latitude_Degree;	//度
-	double  longitude_Degree;	//度
+	double  latitude;  //纬度(NMEA ddmm.mmmm格式)
+	double  longitude; //经度(NMEA dddmm.mmmm格式)
+	double  latitude_Degree;	//纬度(度格式 dd.dddddd)
+	double  longitude_Degree;	//经度(度格式 ddd.dddddd)
 	float 	speed;      //速度
 	float 	direction;  //航向
 	float 	height_ground;    //水平面高度

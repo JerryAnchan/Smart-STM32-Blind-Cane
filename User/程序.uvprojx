@@ -500,6 +500,21 @@
               <FileType>1</FileType>
               <FilePath>..\Driver\gsm.c</FilePath>
             </File>
+            <File>
+              <FileName>app_ui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\app_ui.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\app_sensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\app_utils.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

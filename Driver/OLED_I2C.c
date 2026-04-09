@@ -274,12 +274,14 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
 		i2c_Stop_2();
 }
 
-void WriteCmd(unsigned char I2C_Command)//写命令
+/** @brief 写命令字节到OLED控制寄存器(0x00) */
+void WriteCmd(unsigned char I2C_Command)
 {
 	I2C_WriteByte(0x00, I2C_Command);
 }
 
-void WriteDat(unsigned char I2C_Data)//写数据
+/** @brief 写显示数据到OLED数据寄存器(0x40) */
+void WriteDat(unsigned char I2C_Data)
 {
 	I2C_WriteByte(0x40, I2C_Data);
 }

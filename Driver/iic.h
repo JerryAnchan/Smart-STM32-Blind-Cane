@@ -1,10 +1,14 @@
+/**
+ * @file iic.h
+ * @brief ????I2C?????PC14=SCL, PC15=SDA?
+ */
 #ifndef __IIC_H
 #define __IIC_H
 #include "sys.h"
 
-#define IIC_SCL    PCout(14) //SCL
-#define IIC_SDA    PCout(15) //SDA	 
-#define READ_SDA   PCin(15)  // ‰»ÎSDA 
+#define IIC_SCL    PCout(14) // SCL??
+#define IIC_SDA    PCout(15) // SDA??
+#define READ_SDA   PCin(15)  // ??SDA??
 
 void I2C_SDA_OUT(void);
 void I2C_SDA_IN(void);
